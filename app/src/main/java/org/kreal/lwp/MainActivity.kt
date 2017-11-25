@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ImageView
 import kotlinx.android.synthetic.main.content_main.*
 import org.kreal.lwp.SQLDatabase.WallpaperManager
 import org.kreal.lwp.adapters.ImageAdapter

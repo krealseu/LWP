@@ -10,12 +10,10 @@ import android.opengl.Matrix
 import android.os.Build
 import android.os.SystemClock
 import android.preference.PreferenceManager
-import android.util.Log
 import android.view.SurfaceHolder
 import android.view.WindowManager
 import org.kreal.lwp.models.FileManager
 import org.kreal.lwp.models.PerspectiveModle
-import org.kreal.lwp.service.imageview.PhotoContainer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -58,7 +56,7 @@ class LWPService : GLWallpaperService() {
 
         private var perspectiveModle = PerspectiveModle(baseContext)
 
-        private lateinit var photoFrame: PhotoContainer
+        private lateinit var photoFrame: PhotoFrame
 
         var display = (applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
 
@@ -84,7 +82,7 @@ class LWPService : GLWallpaperService() {
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             Matrix.setLookAtM(mVMatriix, 0, 0f, 0f, 2f, 0f, 0f, 0f, 0f, 1f, 0f)
             photoFrame = PhotoFrame()
-            photoFrame.serSrc(wallpapers.randomWallpaper)
+            photoFrame.setSrc(wallpapers.randomWallpaper)
             MatrixState.setCamera(mVMatriix)
         }
 
@@ -127,7 +125,7 @@ class LWPService : GLWallpaperService() {
         private fun changeWallpaper() {
             queueEvent(Runnable {
                 val name = wallpapers.randomWallpaper
-                photoFrame.serSrc(name)
+                photoFrame.setSrc(name)
                 animationStartTime = SystemClock.elapsedRealtime()
                 requestRender()
             })

@@ -5,12 +5,12 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.Interpolator
 import org.kreal.glutil.ShaderProgram
 import org.kreal.glutil.VertexArray
-import org.kreal.lwp.service.imageview.PhotoContainer
+import org.kreal.lwp.service.PhotoFrame
 
 /**
  * Created by lthee on 2017/10/5.
  */
-class ApertureTransition(private val target: PhotoContainer, duration: Float = 1f) : Transition(duration) {
+class ApertureTransition(private val target: PhotoFrame, duration: Float = 1f) : Transition(duration) {
     override var mInterpolator: Interpolator = AccelerateInterpolator()
     private val program = object : ShaderProgram(vertexShader, fragmentShader) {
         val positionHandle = GLES20.glGetAttribLocation(programID, A_POSOTIION)

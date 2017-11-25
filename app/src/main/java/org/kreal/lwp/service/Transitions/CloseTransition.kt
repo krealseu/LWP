@@ -3,12 +3,12 @@ package org.kreal.lwp.service.Transitions
 import android.opengl.GLES20
 import org.kreal.glutil.ShaderProgram
 import org.kreal.glutil.VertexArray
-import org.kreal.lwp.service.imageview.PhotoContainer
+import org.kreal.lwp.service.PhotoFrame
 
 /**
  * Created by lthee on 2017/10/5.
  */
-class CloseTransition(private val target: PhotoContainer, duration: Float = 0.6f) : Transition(duration) {
+class CloseTransition(private val target: PhotoFrame, duration: Float = 0.6f) : Transition(duration) {
     private val program = object : ShaderProgram(vertexShader, fragmentShader) {
         val positionHandle = GLES20.glGetAttribLocation(programID, A_POSOTIION)
         val fragcoordHandle = GLES20.glGetAttribLocation(programID, A_FLSGCOORD)

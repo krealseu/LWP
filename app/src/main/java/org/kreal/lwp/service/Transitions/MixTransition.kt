@@ -2,12 +2,12 @@ package org.kreal.lwp.service.Transitions
 
 import android.opengl.GLES20
 import org.kreal.glutil.ShaderProgram
-import org.kreal.lwp.service.imageview.PhotoContainer
+import org.kreal.lwp.service.PhotoFrame
 
 /**
  * Created by lthee on 2017/10/4.
  */
-class MixTransition(val targer: PhotoContainer) : Transition() {
+class MixTransition(val targer: PhotoFrame) : Transition() {
 
     private val program = object : ShaderProgram(vertexShader, fragmentShader) {
         val positionHandle = GLES20.glGetAttribLocation(programID, A_POSOTIION)
