@@ -37,6 +37,7 @@ dependencies {
     implementation 'com.github.krealseu:GLUtil:1.0.0'
     implementation 'com.android.support:support-v4:26.+'
     implementation 'junit:junit:4.12'
+    implementation 'com.github.krealseu.widget:filepickdialog:c36e0993d0'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
 }
 repositories {

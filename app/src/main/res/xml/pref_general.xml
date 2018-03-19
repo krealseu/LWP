@@ -1,32 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <EditTextPreference
-        android:defaultValue="10"
-        android:key="RefreshTime"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:inputType="numberDecimal"
-        android:summary="10"
-        android:title="更新间隔/min" />
-    <ListPreference
-        android:defaultValue="1"
-        android:inputType="numberDecimal"
-        android:key="AnimationTime"
-        android:entries="@array/AnimationTime_option"
-        android:entryValues="@array/AnimationTime_value"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:summary="1"
-        android:title="动画过渡时间" />
-    <SwitchPreference
-        android:defaultValue="true"
-        android:key="MoveAble"
-        android:summary="壁纸跟随桌面移动"
-        android:title="屏幕移动" />
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="PerspectiveMoveAble"
-        android:title="透视移动"
-        android:summary="壁纸透视移动"/>
+    <PreferenceCategory android:title="Preference">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="PerspectiveMoveAble"
+            android:summary="壁纸透视移动"
+            android:title="透视移动" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="MoveAble"
+            android:summary="壁纸跟随桌面移动"
+            android:title="屏幕移动" />
+        <Preference
+            android:key="WallpaperSource"
+            android:summary="/storage/emulated/0/download"
+            android:defaultValue="/storage/emulated/0/download"
+            android:title="壁纸源" />
+        <EditTextPreference
+            android:defaultValue="10"
+            android:inputType="numberDecimal"
+            android:key="RefreshTime"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="10"
+            android:title="更新间隔/min" />
+        <ListPreference
+            android:defaultValue="1000"
+            android:entries="@array/AnimationTime_option"
+            android:entryValues="@array/AnimationTime_value"
+            android:key="AnimationTime"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="1"
+            android:title="动画过渡时间" />
+        <ListPreference
+            android:defaultValue="60"
+            android:entries="@array/FPS_option"
+            android:entryValues="@array/FPS_value"
+            android:key="FPSControl"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="60"
+            android:title="FPS控制" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="About">
+        <Preference
+            android:summary="lthee12@hotmail.com"
+            android:title="Email" />
+        <Preference
+            android:summary="https://github.com/krealseu/LWP"
+            android:title="Source code">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://github.com/krealseu/LWP" />
+        </Preference>
+    </PreferenceCategory>
 
 </PreferenceScreen>
