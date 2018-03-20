@@ -1,28 +1,27 @@
 package org.kreal.lwp.service
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import android.os.Build
-import android.os.SystemClock
+import android.os.Environment
 import android.preference.PreferenceManager
 import android.view.SurfaceHolder
 import android.view.WindowManager
-import org.kreal.lwp.models.FileManager
-import org.kreal.lwp.models.PerspectiveModle
+import org.kreal.lwp.models.PerspectiveModel
+import org.kreal.lwp.models.WallpaperManager
+import org.kreal.lwp.settings.*
+import java.io.File
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 /**
  * Created by lthee on 2017/10/3.
+ * 壁纸的server，使用GLView
  */
 class LWPService : GLWallpaperService() {
     var batteryLow = false
-    val batteyReceiver = object : BroadcastReceiver() {
+    private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 Intent.ACTION_BATTERY_LOW -> batteryLow = true
@@ -32,44 +31,65 @@ class LWPService : GLWallpaperService() {
     }
 
     override fun onCreateEngine(): Engine {
-        var intentFilter = IntentFilter()
+        val intentFilter = IntentFilter()
         intentFilter.addAction(Intent.ACTION_BATTERY_LOW)
         intentFilter.addAction(Intent.ACTION_POWER_CONNECTED)
-        baseContext.registerReceiver(batteyReceiver, intentFilter)
-        return SwitchEngice()
+        baseContext.registerReceiver(batteryReceiver, intentFilter)
+        return SwitchEngine()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        baseContext.unregisterReceiver(batteyReceiver)
+        baseContext.unregisterReceiver(batteryReceiver)
     }
 
-    inner class SwitchEngice : GLEngine(), GLSurfaceView.Renderer {
-        val wallpapers = FileManager(baseContext)
+    inner class SwitchEngine : GLEngine(), GLSurfaceView.Renderer, SharedPreferences.OnSharedPreferenceChangeListener {
 
-        private val mVMatriix = FloatArray(16)
+        private val mVMatrix = FloatArray(16)
+
         private val mPMatrix = FloatArray(16)
-        private var mPerspectiveScale = PreferenceManager.getDefaultSharedPreferences(baseContext).getFloat("PhotoFrameScale", 1.0f)
 
-        private var visible = false
-        private var perspectiveMoveAble = true
-
-        private var perspectiveModle = PerspectiveModle(baseContext)
+        private var perspectiveModel = PerspectiveModel(baseContext)
 
         private lateinit var photoFrame: PhotoFrame
 
-        var display = (applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
+        private var display = (applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
+
+        private var mPerspectiveScale = PreferenceManager.getDefaultSharedPreferences(baseContext).getFloat("PhotoFrameScale", 1.0f)
+
+        private val fpsControl: FPSControl = FPSControl(PreferenceManager.getDefaultSharedPreferences(baseContext).getString(FPSControl, "30").toInt())
+
+        private var wallpapers = WallpaperManager(File(PreferenceManager.getDefaultSharedPreferences(baseContext).getString(WallpaperSource, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path)))
+
+        private var refreshTime: Long = (PreferenceManager.getDefaultSharedPreferences(baseContext).getString(RefreshTime, "10").toFloat() * 60000).toLong()
+
+        private var canPerspectiveMove = PreferenceManager.getDefaultSharedPreferences(baseContext).getBoolean(CanPerspectiveMove, true)
+
+        private var canMove: Boolean = PreferenceManager.getDefaultSharedPreferences(baseContext).getBoolean(CanMove, false)
+
+        private var animationTime: Long = PreferenceManager.getDefaultSharedPreferences(baseContext).getString(AnimationTime, "1000").toLong()
+
+        override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
+            when (key) {
+                RefreshTime -> refreshTime = (sharedPreferences.getString(key, "10").toFloat() * 60000).toLong()
+                CanMove -> canMove = sharedPreferences.getBoolean(key, false)
+                CanPerspectiveMove -> canPerspectiveMove = sharedPreferences.getBoolean(key, true)
+                FPSControl -> fpsControl.setFPS(sharedPreferences.getString(key, "30").toInt())
+                WallpaperSource -> wallpapers = WallpaperManager(File(sharedPreferences.getString(key, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path)))
+                AnimationTime -> animationTime = sharedPreferences.getString(key, "1000").toLong()
+            }
+        }
 
         override fun onCreate(surfaceHolder: SurfaceHolder?) {
             super.onCreate(surfaceHolder)
+            PreferenceManager.getDefaultSharedPreferences(baseContext).registerOnSharedPreferenceChangeListener(this)
             setEGLContextClientVersion(2)
             setRenderer(this)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                setPreserveEGLContextOnPause(true)
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            setPreserveEGLContextOnPause(true)
+//            }
             setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY)
         }
-
 
         override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
             GLES20.glViewport(0, 0, width, height)
@@ -80,79 +100,106 @@ class LWPService : GLWallpaperService() {
         }
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-            Matrix.setLookAtM(mVMatriix, 0, 0f, 0f, 2f, 0f, 0f, 0f, 0f, 1f, 0f)
+            Matrix.setLookAtM(mVMatrix, 0, 0f, 0f, 2f, 0f, 0f, 0f, 0f, 1f, 0f)
             photoFrame = PhotoFrame()
-            photoFrame.setSrc(wallpapers.randomWallpaper)
-            MatrixState.setCamera(mVMatriix)
+            photoFrame.setSrc(wallpapers.getRandomWallpaper())
+            MatrixState.setCamera(mVMatrix)
         }
 
-        private var isDrawing = false
-
         override fun onDrawFrame(gl: GL10?) {
-            limitFrameRate()
-            isDrawing = true
             MatrixState.setInitStack()
-            var prespectivePos = FloatArray(2)
             val screenRotation = display.rotation
-            if (perspectiveMoveAble)
-                prespectivePos = perspectiveModle.getValue(screenRotation)
-
-            MatrixState.translate(prespectivePos[1] * (mPerspectiveScale - 1) / 2, -prespectivePos[0] * (mPerspectiveScale - 1) / 2, 0f)
-
+            val perspectivePos: FloatArray = if (canPerspectiveMove) perspectiveModel.getValue(screenRotation) else floatArrayOf(0f, 0f)
+            MatrixState.translate(perspectivePos[1] * (mPerspectiveScale - 1) / 2, -perspectivePos[0] * (mPerspectiveScale - 1) / 2, 0f)
             photoFrame.draw(MatrixState.getFinalMatrix())
-
-            isDrawing = false
+            fpsControl.blockWait()
             requestRender()
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
             super.onVisibilityChanged(visible)
-            this.visible = visible
             if (visible) {
-                if (perspectiveMoveAble && !batteryLow) {
-                    perspectiveModle.enable()
+                if (canPerspectiveMove && !batteryLow) {
+                    perspectiveModel.enable()
                 }
                 if (isNeedRefresh()) {
                     changeWallpaper()
                 }
                 requestRender()
             } else {
-                perspectiveModle.disable()
+                perspectiveModel.disable()
             }
         }
 
-        var animationStartTime = SystemClock.elapsedRealtime()
+        override fun onDestroy() {
+            super.onDestroy()
+            PreferenceManager.getDefaultSharedPreferences(baseContext).unregisterOnSharedPreferenceChangeListener(this)
+        }
+
         private fun changeWallpaper() {
             queueEvent(Runnable {
-                val name = wallpapers.randomWallpaper
+                val name = wallpapers.getRandomWallpaper()
                 photoFrame.setSrc(name)
-                animationStartTime = SystemClock.elapsedRealtime()
                 requestRender()
             })
         }
 
-        private var lastRefreshThime: Long = System.currentTimeMillis()
+        private var lastRefreshTime: Long = System.currentTimeMillis()
+
         private fun isNeedRefresh(): Boolean {
             val time = System.currentTimeMillis()
-            val result: Boolean
-            if (Math.abs(time - lastRefreshThime) > 300) {
-                lastRefreshThime = time
-                result = true
-            } else
-                result = false
-            return result
+            return if (Math.abs(time - lastRefreshTime) > refreshTime) {
+                lastRefreshTime = time
+                true
+            } else false
         }
 
-        private val FPS = (1000 / 30).toLong()
-        private var frameStartTimeMs: Long = 0
-        private fun limitFrameRate() {
-            val elapasedFrameTimes = SystemClock.elapsedRealtime() - frameStartTimeMs
-            val timeToSleepMs = FPS - elapasedFrameTimes
-            if (timeToSleepMs > 0)
-                SystemClock.sleep(timeToSleepMs)
-            frameStartTimeMs = SystemClock.elapsedRealtime()
+    }
+
+    class FPSControl(fps: Int) {
+
+        private val nanosPERMilli = 1000000
+
+        private val nanosPERSecond = 1000000000
+
+        private var frameDuration: Long = (nanosPERSecond / fps).toLong()
+
+        fun setFPS(fps: Int) {
+            frameDuration = (nanosPERSecond / fps).toLong()
         }
 
+        private var lastFpsInfo: FpsInfo = FpsInfo(System.nanoTime(), 0, 0)
+
+        fun asyncWait(request: () -> Unit) {
+            val showTime = System.nanoTime()
+            Thread {
+                val workDuration = showTime - lastFpsInfo.leaveTime
+
+                val nextWorkDuration = (workDuration + lastFpsInfo.workDuration) shr 1
+
+                val tmp = frameDuration - nextWorkDuration + showTime
+                val timeToSleepNanos = tmp - System.nanoTime()
+                if (timeToSleepNanos > 0)
+                    Thread.sleep(timeToSleepNanos / nanosPERMilli, (timeToSleepNanos % nanosPERMilli).toInt())
+                lastFpsInfo = FpsInfo(showTime, workDuration, System.nanoTime())
+                request()
+            }.start()
+        }
+
+        fun blockWait() {
+            val showTime = System.nanoTime()
+            val workDuration = showTime - lastFpsInfo.leaveTime
+
+            val nextWorkDuration = (workDuration + lastFpsInfo.workDuration) shr 1
+
+            val tmp = frameDuration - nextWorkDuration + showTime
+            val timeToSleepNanos = tmp - System.nanoTime()
+            if (timeToSleepNanos > 0)
+                Thread.sleep(timeToSleepNanos / nanosPERMilli, (timeToSleepNanos % nanosPERMilli).toInt())
+            lastFpsInfo = FpsInfo(showTime, workDuration, System.nanoTime())
+        }
+
+        data class FpsInfo(var showTime: Long, var workDuration: Long, val leaveTime: Long)
     }
 
 }

@@ -6,12 +6,13 @@ import com.squareup.leakcanary.LeakCanary
 
 /**
  * Created by lthee on 2017/10/1.
+ *在应用启动时绑定leak canary，初始缩放化参数
  */
 class App : Application() {
-    val USE_LEAK_CANARY = true
+    private val useLeakCanary = true
     override fun onCreate() {
         super.onCreate()
-        if (USE_LEAK_CANARY) {
+        if (useLeakCanary) {
             if (LeakCanary.isInAnalyzerProcess(this)) {
                 return
             }
@@ -25,7 +26,7 @@ class App : Application() {
                     .putInt("ScreenWidth", dm.widthPixels)
                     .putInt("ScreenHeight", dm.heightPixels)
                     .putBoolean("IsInit", true)
-                    .commit()
+                    .apply()
         }
 
 
