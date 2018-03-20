@@ -6,17 +6,18 @@ import org.kreal.glutil.ShaderProgram
 
 /**
  * Created by lthee on 2017/6/5.
+ * OpenGL ES 的着色器程序封装
  */
 
 open class PhotoProgram : ShaderProgram(vertexShader, fragmentShader) {
 
     val positionHandle: Int
     val texPositionHandle: Int
-    val mTextureHandle: Int
-    val mViewMatrixHandle: Int
+    private val mTextureHandle: Int
+    private val mViewMatrixHandle: Int
 
     init {
-        positionHandle = GLES20.glGetAttribLocation(programID, A_POSOTIION)
+        positionHandle = GLES20.glGetAttribLocation(programID, A_POSITION)
         texPositionHandle = GLES20.glGetAttribLocation(programID, A_TEXTURE_COORDINATES)
         mTextureHandle = GLES20.glGetUniformLocation(programID, S_TEXTURE)
         mViewMatrixHandle = GLES20.glGetUniformLocation(programID, U_MVPMATRIX)
@@ -30,24 +31,24 @@ open class PhotoProgram : ShaderProgram(vertexShader, fragmentShader) {
     }
 
     companion object {
-        private val vertexShader = "uniform mat4 u_MVPMatrix ;" +
-                "attribute vec2 a_Postion;" +
+        private const val vertexShader = "uniform mat4 u_MVPMatrix ;" +
+                "attribute vec2 a_Position;" +
                 "attribute vec2 a_TextureCoordinates;" +
-                "varying vec2 v_TextureCoord;" +
+                "varying vec2 v_TextureCoordinates;" +
                 "void main() {" +
-                "v_TextureCoord=a_TextureCoordinates;" +
-                "gl_Position = u_MVPMatrix * vec4(a_Postion,0,1);" +
+                "v_TextureCoordinates=a_TextureCoordinates;" +
+                "gl_Position = u_MVPMatrix * vec4(a_Position,0,1);" +
                 "}"
-        private val fragmentShader = "precision mediump float;" +
-                "varying vec2 v_TextureCoord;" +
+        private const val fragmentShader = "precision mediump float;" +
+                "varying vec2 v_TextureCoordinates;" +
                 "uniform sampler2D s_Texture;" +
                 "void main() {" +
-                " vec4 texture = texture2D(s_Texture,v_TextureCoord);" +
+                " vec4 texture = texture2D(s_Texture,v_TextureCoordinates);" +
                 "  gl_FragColor = texture;" +
                 "}"
-        private val U_MVPMATRIX = "u_MVPMatrix"
-        private val A_POSOTIION = "a_Postion"
-        private val A_TEXTURE_COORDINATES = "a_TextureCoordinates"
-        private val S_TEXTURE = "s_Texture"
+        private const val U_MVPMATRIX = "u_MVPMatrix"
+        private const val A_POSITION = "a_Position"
+        private const val A_TEXTURE_COORDINATES = "a_TextureCoordinates"
+        private const val S_TEXTURE = "s_Texture"
     }
 }
