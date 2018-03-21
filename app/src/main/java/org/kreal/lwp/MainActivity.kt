@@ -12,7 +12,6 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.ImageView
 import kotlinx.android.synthetic.main.content_main.*
 import org.kreal.lwp.SQLDatabase.WallpaperManager
 import org.kreal.lwp.adapters.ImageAdapter
@@ -76,7 +75,7 @@ class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallba
                 startActivity(Intent(baseContext, SettingsActivity::class.java))
                 return true
             }
-            R.id.action_startlwp -> {
+            R.id.action_live_wallpaper -> {
                 val intent = Intent(android.app.WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
                 val componentName = ComponentName("org.kreal.lwp", "org.kreal.lwp.service.LWPService")
                 intent.putExtra(android.app.WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, componentName)
