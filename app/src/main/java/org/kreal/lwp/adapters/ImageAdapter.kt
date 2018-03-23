@@ -1,73 +1,78 @@
 package org.kreal.lwp.adapters
 
-import android.content.Context
-import android.preference.PreferenceManager
+import android.net.Uri
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AlphaAnimation
 import android.widget.ImageView
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.item_image.view.*
 import org.kreal.lwp.R
 
 /**
- * Created by lthee on 2017/10/2.
+ * Created by lthee on 2018/3/23.
+ * image的适配器，将数据和view绑定
  */
-class ImageAdapter(val context: Context, var data: Array<String>?) : RecyclerView.Adapter<ImageAdapter.ImageViewHolder>() {
-    var imageHeight: Int = PreferenceManager.getDefaultSharedPreferences(context).getInt("test", 400)
-    var isSelected = false
-    var selects = BooleanArray(data?.size ?: 0)
 
-    public fun swapeData(datas: Array<String>?) {
-        data = datas
-        selects = BooleanArray(data?.size ?: 0)
-        notifyDataSetChanged()
+class ImageAdapter(private var data: AdapterData<Uri, Boolean>, private val imageHeight: Int) : RecyclerView.Adapter<ImageAdapter.ItemHolder>() {
+
+    private var mListener: OnItemClickListener? = null
+
+    private var mOnLongListener: OnItemLongClickListener? = null
+
+
+    fun setOnItemClickListener(listener: OnItemClickListener) {
+        mListener = listener
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ImageViewHolder {
-        var view = LayoutInflater.from(parent?.context).inflate(R.layout.item_image, parent, false)
-//        var view1 = View.inflate(parent?.context,R.layout.item_image,null)
-        return ImageViewHolder(view)
+    fun setOnItemLongClickListener(listener: OnItemLongClickListener) {
+        mOnLongListener = listener
     }
 
-    override fun getItemCount(): Int {
-        return data?.size ?: 0
-    }
-
-    override fun onBindViewHolder(holder: ImageViewHolder?, position: Int) {
-        holder?.bindData(data?.get(position)!!, position)
-    }
-
-    inner class ImageViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
-        var item_image = itemView!!.item_image
-        var checkbox = itemView!!.checkbox
-
-        init {
-            item_image.scaleType = ImageView.ScaleType.CENTER_CROP
-            item_image.minimumHeight = imageHeight
-        }
-
-        fun bindData(data: String, position: Int) {
-            Glide.with(context).load(data).into(item_image)
-            checkbox.visibility = if (isSelected) View.VISIBLE else View.INVISIBLE
-            checkbox.isChecked =  selects[position]
-            checkbox.setOnCheckedChangeListener { _, ischeckd -> selects[position] = ischeckd }
+    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ItemHolder {
+        val view = LayoutInflater.from(parent?.context).inflate(R.layout.item_image, parent, false)
+        val itemHolder = ItemHolder(view)
+        itemHolder.apply {
+            imageView.scaleType = ImageView.ScaleType.CENTER_CROP
+            imageView.minimumHeight = imageHeight
+            itemView.setOnClickListener {
+                mListener?.onItemClick(this, data[adapterPosition], adapterPosition)
+            }
             itemView.setOnLongClickListener {
-                if (isSelected)
-                    false
-                else {
-                    isSelected = true
-                    for (i in 0..(selects.size - 1)) {
-                        selects[i] = false
-                    }
-                    selects[position] = true
-                    notifyDataSetChanged()
-                    true
-                }
+                return@setOnLongClickListener mOnLongListener?.onItemLongClick(this, data[adapterPosition], adapterPosition)
+                        ?: false
             }
 
         }
+        return itemHolder
+    }
+
+    override fun getItemCount(): Int = data.getSize()
+
+    override fun onBindViewHolder(holder: ItemHolder?, position: Int) {
+        holder?.apply {
+            Glide.with(holder.itemView).load(data[adapterPosition]).into(imageView)
+            shadow.visibility = if (data.getDataState(data[adapterPosition])) View.VISIBLE else View.INVISIBLE
+        }
+    }
+
+    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val imageView: ImageView = itemView.findViewById(R.id.item_image)
+        val shadow: View = itemView.findViewById(R.id.item_shadow)
+        fun showOrHideShadow(visible: Boolean) {
+            shadow.visibility = if (visible) View.VISIBLE else View.INVISIBLE
+            val annotation = if (visible) AlphaAnimation(0f, 1f) else AlphaAnimation(1f, 0f)
+            annotation.duration = 200
+            shadow.startAnimation(annotation)
+        }
+    }
+
+    interface OnItemClickListener {
+        fun onItemClick(itemHolder: ItemHolder, data: Uri, position: Int)
+    }
+
+    interface OnItemLongClickListener {
+        fun onItemLongClick(itemHolder: ItemHolder, data: Uri, position: Int): Boolean
     }
 }
