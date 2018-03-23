@@ -3,6 +3,8 @@ package org.kreal.lwp
 import android.app.Application
 import android.preference.PreferenceManager
 import com.squareup.leakcanary.LeakCanary
+import org.kreal.lwp.settings.WallpaperSource
+import java.io.File
 
 /**
  * Created by lthee on 2017/10/1.
@@ -29,6 +31,13 @@ class App : Application() {
                     .apply()
         }
 
+        val file = File(baseContext.filesDir, WallpaperSource)
+        if (!file.exists())
+            file.mkdirs()
+        else if (file.isFile) {
+            file.delete()
+            file.mkdirs()
+        }
 
     }
 }
