@@ -2,36 +2,63 @@ package org.kreal.lwp.loader
 
 import android.content.AsyncTaskLoader
 import android.content.Context
-import android.graphics.BitmapFactory
-import android.util.Log
+import android.net.Uri
+import android.os.FileObserver
+import org.kreal.lwp.settings.WallpaperSource
 import java.io.File
+import java.util.regex.Pattern
 
 /**
  * Created by lthee on 2017/10/1.
+ * 从app的data下的WallpaperSource文件夹加载图片
  */
-class WallpaperLoader(context: Context?) : AsyncTaskLoader<Array<String>>(context) {
-    lateinit var mFiles: Array<File>
-    var mRoot: File
+class WallpaperLoader(context: Context) : AsyncTaskLoader<List<Uri>>(context) {
+    private val srcFile: File = File(context.filesDir, WallpaperSource)
+
+    private var data: MutableList<Uri>? = null
+
+    private val pattern: Pattern = Pattern.compile(".(jpg|jpeg|png)$", Pattern.CASE_INSENSITIVE)
+
+    private val fileObserver: FileObserver = object : FileObserver(srcFile.path, FileObserver.CREATE or FileObserver.DELETE) {
+        override fun onEvent(event: Int, path: String) {
+            if (pattern.matcher(path).find())
+                onContentChanged()
+        }
+    }
 
     init {
-        mRoot = File("/sdcard/CC/BiZhi")
-    }
-
-    override fun loadInBackground(): Array<String> {
-        var filenames = mRoot.list { _, s -> s.endsWith(".jpg") || s.endsWith(".png") }
-        for (i in 0..(filenames.size - 1))
-            filenames[i] = mRoot.canonicalPath + File.separator + filenames[i]
-        return filenames
-    }
-
-    override fun deliverResult(data: Array<String>?) {
-        super.deliverResult(data)
+        fileObserver.startWatching()
     }
 
     override fun onStartLoading() {
-//        if (mFiles!=null)
-//            deliverResult(mFiles)
-        super.onStartLoading()
-        forceLoad()
+//        data?.also { deliverResult(it) }
+        if (takeContentChanged() || data == null) {
+            forceLoad()
+        }
+    }
+
+    override fun loadInBackground(): List<Uri> {
+        val files = srcFile.listFiles { _, s -> pattern.matcher(s).find() }
+                ?: arrayOf()
+        data?.clear()
+        val result = arrayListOf<Uri>()
+        files.forEach { file ->
+            result.add(Uri.fromFile(file))
+        }
+        data = result
+        return result
+    }
+
+    override fun deliverResult(data: List<Uri>?) {
+        if (isStarted) {
+            super.deliverResult(data)
+        }
+    }
+
+    override fun onReset() {
+        super.onReset()
+        fileObserver.stopWatching()
+        data?.clear()
+        data = null
     }
 }
