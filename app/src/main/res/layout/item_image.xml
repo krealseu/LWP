@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/list_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,13 +9,16 @@
     <ImageView
         android:id="@+id/item_image"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:contentDescription="@string/item_image" />
 
-    <CheckBox
-        android:id="@+id/checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:checked="false" />
-</RelativeLayout>
+    <ImageView
+        android:id="@+id/item_shadow"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_fab_delete"
+        android:background="#80261919" android:contentDescription="@string/delete"/>
+
+</FrameLayout>

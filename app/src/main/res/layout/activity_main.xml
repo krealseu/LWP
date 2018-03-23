@@ -11,12 +11,60 @@
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:layout_gravity="center"
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+            <FrameLayout
+                android:id="@+id/select_bar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="invisible">
+
+                <ImageView
+                    android:id="@+id/select_bar_cancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="10dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/close"
+                    android:src="@drawable/ic_action_close" />
+
+                <TextView
+                    android:id="@+id/select_bar_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/select"
+                    android:textSize="10pt" />
+
+
+                <ImageView
+                    android:id="@+id/select_bar_delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|center"
+                    android:layout_margin="10dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/delete"
+                    android:src="@drawable/ic_fab_delete" />
+            </FrameLayout>
+
+        </FrameLayout>
 
     </android.support.design.widget.AppBarLayout>
 
@@ -28,6 +76,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        android:clickable="true"
+        android:focusable="true"
+        app:srcCompat="@drawable/ic_fab_add" />
 
 </android.support.design.widget.CoordinatorLayout>

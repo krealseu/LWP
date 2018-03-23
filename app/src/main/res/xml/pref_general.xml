@@ -23,7 +23,7 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:summary="10"
-            android:title="更新间隔/min" />
+            android:title="更新间隔 min" />
         <ListPreference
             android:defaultValue="1000"
             android:entries="@array/AnimationTime_option"
