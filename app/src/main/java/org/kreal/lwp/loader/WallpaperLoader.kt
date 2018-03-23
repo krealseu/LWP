@@ -20,8 +20,8 @@ class WallpaperLoader(context: Context) : AsyncTaskLoader<List<Uri>>(context) {
     private val pattern: Pattern = Pattern.compile(".(jpg|jpeg|png)$", Pattern.CASE_INSENSITIVE)
 
     private val fileObserver: FileObserver = object : FileObserver(srcFile.path, FileObserver.CREATE or FileObserver.DELETE) {
-        override fun onEvent(event: Int, path: String) {
-            if (pattern.matcher(path).find())
+        override fun onEvent(event: Int, path: String?) {
+            if (path != null && pattern.matcher(path).find())
                 onContentChanged()
         }
     }
