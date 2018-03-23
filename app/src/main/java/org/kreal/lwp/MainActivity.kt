@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import android.support.design.widget.FloatingActionButton
+import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -48,16 +49,18 @@ class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallba
 
     override fun onItemClick(itemHolder: ImageAdapter.ItemHolder, data: Uri, position: Int) {
         if (mAdapterData.selects.isEmpty())
-            return
-        val state = mAdapterData.getDataState(data)
-        val select = mAdapterData.selects
-        mAdapterData.setDataState(data, !state)
-        itemHolder.showOrHideShadow(!state)
-        selectBarInfo.text = String.format("Selected %d", select.size)
-        if ((selectBar.visibility == View.VISIBLE) == select.isEmpty())
-            showOrHideSelectView(false)
-        if ((selectBar.visibility != View.VISIBLE) == (!select.isEmpty()))
-            showOrHideSelectView(true)
+            actionShow(data)
+        else {
+            val state = mAdapterData.getDataState(data)
+            val select = mAdapterData.selects
+            mAdapterData.setDataState(data, !state)
+            itemHolder.showOrHideShadow(!state)
+            selectBarInfo.text = String.format("Selected %d", select.size)
+            if ((selectBar.visibility == View.VISIBLE) == select.isEmpty())
+                showOrHideSelectView(false)
+            if ((selectBar.visibility != View.VISIBLE) == (!select.isEmpty()))
+                showOrHideSelectView(true)
+        }
     }
 
     override fun onClick(view: View) {
@@ -94,6 +97,14 @@ class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallba
         annotation.duration = 200
         fab.startAnimation(annotation)
         startActivityForResult(intent, requestImageCode)
+    }
+
+    private fun actionShow(uri: Uri) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        val data = FileProvider.getUriForFile(baseContext, "org.kreal.lwp", File(uri.path))
+        intent.setDataAndType(data, "image/*")
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        startActivity(intent)
     }
 
     private fun showOrHideSelectView(visible: Boolean) {

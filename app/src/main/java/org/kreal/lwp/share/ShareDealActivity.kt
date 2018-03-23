@@ -21,7 +21,12 @@ import org.kreal.lwp.R
 import org.kreal.lwp.adapters.ImageAdapter
 import org.kreal.lwp.adapters.ImageAdapterData
 
-class ShareDealActivity : AppCompatActivity() {
+class ShareDealActivity : AppCompatActivity(), ImageAdapter.OnItemClickListener {
+    override fun onItemClick(itemHolder: ImageAdapter.ItemHolder, data: Uri, position: Int) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.setDataAndType(data, "image/*")
+        startActivity(intent)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +77,7 @@ class ShareDealActivity : AppCompatActivity() {
         val adapter = ImageAdapter(ImageAdapterData(arrayList), (point.y / num))
         recyclerView.layoutManager = GridLayoutManager(baseContext, num)
         recyclerView.adapter = adapter
-
+        adapter.setOnItemClickListener(this)
         button.setText(R.string.save)
         button.background.alpha = 160
         button.setOnClickListener {
