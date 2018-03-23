@@ -55,7 +55,7 @@ class LWPService : GLWallpaperService() {
 
         private var display = (applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
 
-        private var mPerspectiveScale = PreferenceManager.getDefaultSharedPreferences(baseContext).getFloat("PhotoFrameScale", 1.0f)
+        private var mPerspectiveScale = PreferenceManager.getDefaultSharedPreferences(baseContext).getFloat(PhotoFrameScale, 1.0f)
 
         private val fpsControl: FPSControl = FPSControl(PreferenceManager.getDefaultSharedPreferences(baseContext).getString(FPSControl, "30").toInt())
 
