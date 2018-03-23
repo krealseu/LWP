@@ -59,7 +59,7 @@ class LWPService : GLWallpaperService() {
 
         private val fpsControl: FPSControl = FPSControl(PreferenceManager.getDefaultSharedPreferences(baseContext).getString(FPSControl, "30").toInt())
 
-        private var wallpapers = WallpaperManager(File(PreferenceManager.getDefaultSharedPreferences(baseContext).getString(WallpaperSource, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path)))
+        private val wallpapers = WallpaperManager(File(baseContext.filesDir, WallpaperSource))
 
         private var refreshTime: Long = (PreferenceManager.getDefaultSharedPreferences(baseContext).getString(RefreshTime, "10").toFloat() * 60000).toLong()
 
@@ -75,7 +75,6 @@ class LWPService : GLWallpaperService() {
                 CanMove -> canMove = sharedPreferences.getBoolean(key, false)
                 CanPerspectiveMove -> canPerspectiveMove = sharedPreferences.getBoolean(key, true)
                 FPSControl -> fpsControl.setFPS(sharedPreferences.getString(key, "30").toInt())
-                WallpaperSource -> wallpapers = WallpaperManager(File(sharedPreferences.getString(key, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path)))
                 AnimationTime -> animationTime = sharedPreferences.getString(key, "1000").toLong()
             }
         }
