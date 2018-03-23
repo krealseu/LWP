@@ -75,4 +75,15 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+
+    <string name="ask_grant">Need the permission of read and write,click the button below to authorize</string>
+    <string name="go_setting_grant">If authorize fail,click the button below to enter the app info activity.Then open the app\'s full storage</string>
+    <string name="grant_btn">Grant</string>
+    <string name="go_setting_btn">Go Setting</string>
+    <string name="close">close</string>
+    <string name="save">Save</string>
+    <string name="error_share">Error Share</string>
+    <string name="delete">delete</string>
+    <string name="select">Selected 0</string>
+    <string name="item_image">item_image</string>
 </resources>
