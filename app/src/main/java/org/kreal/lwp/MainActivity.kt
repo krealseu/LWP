@@ -190,7 +190,6 @@ class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallba
             showOrHideSelectView(true)
 
         loaderManager.initLoader(loaderID, null, this)
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
