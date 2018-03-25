@@ -61,6 +61,13 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
             <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="application/zip" />
+            </intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -71,7 +78,8 @@
 
         <service
             android:name=".share.ShareDealService"
-            android:exported="false"/>
+            android:exported="false" />
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="org.kreal.lwp"
@@ -82,6 +90,9 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <service
+            android:name=".backup.BackupService"
+            android:exported="false" />
     </application>
 
 </manifest>

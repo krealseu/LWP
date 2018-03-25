@@ -31,7 +31,7 @@ import org.kreal.lwp.models.WallpaperManager
 import org.kreal.lwp.settings.SettingsActivity
 import org.kreal.lwp.settings.WallpaperSource
 import java.io.File
-import java.util.ArrayList
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallbacks<List<Uri>>,

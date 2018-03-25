@@ -59,7 +59,7 @@ class LWPService : GLWallpaperService() {
 
         private val fpsControl: FPSControl = FPSControl(PreferenceManager.getDefaultSharedPreferences(baseContext).getString(FPSControl, "30").toInt())
 
-        private val wallpapers = WallpaperManager(File(baseContext.filesDir, WallpaperSource))
+        private val wallpapers = WallpaperManager(baseContext.getFileStreamPath(WallpaperSource))
 
         private var refreshTime: Long = (PreferenceManager.getDefaultSharedPreferences(baseContext).getString(RefreshTime, "10").toFloat() * 60000).toLong()
 

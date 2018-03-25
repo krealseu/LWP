@@ -6,17 +6,20 @@
             android:key="PerspectiveMoveAble"
             android:summary="壁纸透视移动"
             android:title="透视移动" />
+
         <SwitchPreference
             android:defaultValue="true"
             android:key="MoveAble"
             android:summary="壁纸跟随桌面移动"
             android:title="屏幕移动" />
-        <Preference
-            android:key="WallpaperSource"
-            android:summary="/storage/emulated/0/download"
-            android:defaultValue="/storage/emulated/0/download"
-            android:title="壁纸源" />
-        <EditTextPreference
+
+        <!--<Preference-->
+        <!--android:defaultValue="/storage/emulated/0/download"-->
+        <!--android:key="WallpaperSource"-->
+        <!--android:summary="/storage/emulated/0/download"-->
+        <!--android:title="壁纸源" />-->
+
+        <org.kreal.lwp.settings.EditTextNoNullPreference
             android:defaultValue="10"
             android:inputType="numberDecimal"
             android:key="RefreshTime"
@@ -24,6 +27,7 @@
             android:singleLine="true"
             android:summary="10"
             android:title="更新间隔 min" />
+
         <ListPreference
             android:defaultValue="1000"
             android:entries="@array/AnimationTime_option"
@@ -33,6 +37,7 @@
             android:singleLine="true"
             android:summary="1"
             android:title="动画过渡时间" />
+
         <ListPreference
             android:defaultValue="60"
             android:entries="@array/FPS_option"
@@ -42,11 +47,36 @@
             android:singleLine="true"
             android:summary="60"
             android:title="FPS控制" />
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Backup &amp; Restore">
+        <org.kreal.lwp.settings.EditTextNoNullPreference
+            android:defaultValue="backup"
+            android:inputType="text"
+            android:key="Backup"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Backup" />
+
+        <org.kreal.lwp.settings.EditTextNoNullPreference
+            android:defaultValue="backup"
+            android:inputType="text"
+            android:key="Restore"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Restore" />
+
     </PreferenceCategory>
     <PreferenceCategory android:title="About">
         <Preference
+            android:key="Version"
+            android:summary="1.0.0"
+            android:title="Version" />
+
+        <Preference
             android:summary="lthee12@hotmail.com"
             android:title="Email" />
+
         <Preference
             android:summary="https://github.com/krealseu/LWP"
             android:title="Source code">

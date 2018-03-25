@@ -82,8 +82,10 @@
     <string name="go_setting_btn">Go Setting</string>
     <string name="close">close</string>
     <string name="save">Save</string>
+    <string name="load">Load</string>
     <string name="error_share">Error Share</string>
     <string name="delete">delete</string>
     <string name="select">Selected 0</string>
     <string name="item_image">item_image</string>
+    <string name="load_from_zip">Load info from zip</string>
 </resources>

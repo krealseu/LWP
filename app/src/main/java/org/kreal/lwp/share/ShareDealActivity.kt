@@ -33,12 +33,36 @@ class ShareDealActivity : AppCompatActivity(), ImageAdapter.OnItemClickListener 
         val intent = intent
         val action = intent.action
         val type = intent.type
-        if (action == Intent.ACTION_SEND && type.startsWith("image/")) {
-            dealPicStream(intent.getParcelableExtra(Intent.EXTRA_STREAM))
+        if (action == Intent.ACTION_SEND) {
+            if (type.startsWith("image/"))
+                dealPicStream(intent.getParcelableExtra(Intent.EXTRA_STREAM))
+            else if (type == "application/zip")
+                dealZipStream(intent.getParcelableExtra(Intent.EXTRA_STREAM))
         } else if (action == Intent.ACTION_SEND_MULTIPLE && type.startsWith("image/")) {
             dealMultiplePicStream(intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM))
         } else showError()
 
+    }
+
+    private fun dealZipStream(uri: Uri) {
+        val frameLayout = FrameLayout(baseContext)
+        val textView = TextView(baseContext)
+        textView.setText(R.string.load_from_zip)
+        textView.setTextColor(Color.BLACK)
+        textView.textSize = 30f
+        textView.gravity = Gravity.CENTER
+        frameLayout.addView(textView)
+        val button = Button(baseContext)
+        val buttonLayout = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        buttonLayout.gravity = Gravity.BOTTOM or Gravity.CENTER
+        button.setText(R.string.load)
+        button.background.alpha = 160
+        button.setOnClickListener {
+            ShareDealService.startAction(baseContext, arrayListOf(uri), ShareDealService.Zip)
+            finish()
+        }
+        frameLayout.addView(button, buttonLayout)
+        setContentView(frameLayout)
     }
 
     private fun dealPicStream(uri: Uri) {
@@ -53,7 +77,7 @@ class ShareDealActivity : AppCompatActivity(), ImageAdapter.OnItemClickListener 
         button.setText(R.string.save)
         button.background.alpha = 160
         button.setOnClickListener {
-            ShareDealService.startAction(baseContext, arrayListOf(uri))
+            ShareDealService.startAction(baseContext, arrayListOf(uri), ShareDealService.Image)
             finish()
         }
         frameLayout.addView(button, buttonLayout)
@@ -81,7 +105,7 @@ class ShareDealActivity : AppCompatActivity(), ImageAdapter.OnItemClickListener 
         button.setText(R.string.save)
         button.background.alpha = 160
         button.setOnClickListener {
-            ShareDealService.startAction(baseContext, arrayList)
+            ShareDealService.startAction(baseContext, arrayList, ShareDealService.Image)
             finish()
         }
     }

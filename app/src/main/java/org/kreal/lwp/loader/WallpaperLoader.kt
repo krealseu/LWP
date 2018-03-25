@@ -4,6 +4,7 @@ import android.content.AsyncTaskLoader
 import android.content.Context
 import android.net.Uri
 import android.os.FileObserver
+import android.os.Handler
 import org.kreal.lwp.settings.WallpaperSource
 import java.io.File
 import java.util.regex.Pattern
@@ -19,10 +20,24 @@ class WallpaperLoader(context: Context) : AsyncTaskLoader<List<Uri>>(context) {
 
     private val pattern: Pattern = Pattern.compile(".(jpg|jpeg|png)$", Pattern.CASE_INSENSITIVE)
 
+    private val handler = Handler()
+
+    private var lastDeliverTime: Long = 0
+
+    private val delayTime: Long = 500
+
+    private val contentChangedDelayRunnable = Runnable {
+        onContentChanged()
+    }
+
     private val fileObserver: FileObserver = object : FileObserver(srcFile.path, FileObserver.CREATE or FileObserver.DELETE) {
         override fun onEvent(event: Int, path: String?) {
-            if (path != null && pattern.matcher(path).find())
-                onContentChanged()
+            if (path != null && pattern.matcher(path).find()) {
+                val currentTime = System.currentTimeMillis()
+                val delta = if ((currentTime - lastDeliverTime) > delayTime) 0 else (currentTime - lastDeliverTime)
+                handler.removeCallbacks(contentChangedDelayRunnable)
+                handler.postDelayed(contentChangedDelayRunnable, delta)
+            }
         }
     }
 
@@ -51,6 +66,7 @@ class WallpaperLoader(context: Context) : AsyncTaskLoader<List<Uri>>(context) {
 
     override fun deliverResult(data: List<Uri>?) {
         if (isStarted) {
+            lastDeliverTime = System.currentTimeMillis()
             super.deliverResult(data)
         }
     }

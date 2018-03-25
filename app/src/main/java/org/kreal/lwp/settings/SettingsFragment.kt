@@ -1,28 +1,51 @@
 package org.kreal.lwp.settings
 
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
-import android.preference.ListPreference
-import android.preference.Preference
-import android.preference.PreferenceFragment
+import android.os.Environment
+import android.preference.*
+import android.widget.Toast
+import org.kreal.lwp.BuildConfig
 import org.kreal.lwp.R
-import org.kreal.widget.filepickdialog.FilePickDialogFragment
+import org.kreal.lwp.StoragePermissionGrant
+import org.kreal.lwp.backup.BackupService
+import java.io.File
 
 
 class SettingsFragment : PreferenceFragment(), Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
-    override fun onPreferenceClick(preference: Preference): Boolean {
-        if (preference.key == WallpaperSource) {
-            FilePickDialogFragment().apply {
-                selectFolder = true
-                setListener {
-                    val path = it[0].path
-                    preference.summary = path
-                    preference.sharedPreferences.edit().putString(preference.key, path).apply()
+
+    private val mBackupRestorePreferenceChangeListener: Preference.OnPreferenceChangeListener = Preference.OnPreferenceChangeListener { preference: Preference, newVaule: Any ->
+        val name = newVaule.toString()
+        return@OnPreferenceChangeListener when (preference.key) {
+            Backup -> {
+                BackupService.startActionBackup(activity, "$name.lwpbackup")
+                true
+            }
+            Restore -> {
+                if (File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "$name.lwpbackup").isFile) {
+                    BackupService.startActionRestore(activity, "$name.lwpbackup")
+                    true
+                } else {
+                    Toast.makeText(activity, "Fail: File $name.lwp is't exists.", Toast.LENGTH_SHORT).show()
+                    false
                 }
-            }.show(fragmentManager, preference.key)
-            return true
+            }
+            else -> false
         }
-        return false
     }
+
+    override fun onPreferenceClick(preference: Preference): Boolean = when (preference.key) {
+        Restore, Backup -> {
+            if (!StoragePermissionGrant.checkPermissions(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) context else activity)) {
+                (preference as DialogPreference).dialog.dismiss()
+                StoragePermissionGrant().show(fragmentManager, "RequestStoragePermission")
+            }
+            true
+        }
+        else -> false
+    }
+
 
     override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
         val stringValue = newValue.toString()
@@ -41,23 +64,30 @@ class SettingsFragment : PreferenceFragment(), Preference.OnPreferenceChangeList
         preference.onPreferenceChangeListener.onPreferenceChange(preference, preference.sharedPreferences.getString(preference.key, ""))
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addPreferencesFromResource(R.xml.pref_general)
         setHasOptionsMenu(true)
 
-        findPreference(WallpaperSource).onPreferenceClickListener = this
+//        findPreference(WallpaperSource).onPreferenceClickListener = this
 
-        val wallpaperSourcePrf = findPreference(WallpaperSource)
-        wallpaperSourcePrf.summary = preferenceManager.sharedPreferences.getString(wallpaperSourcePrf.key, wallpaperSourcePrf.summary.toString())
+//        val wallpaperSourcePrf = findPreference(WallpaperSource)
+//        wallpaperSourcePrf.summary = preferenceManager.sharedPreferences.getString(wallpaperSourcePrf.key, wallpaperSourcePrf.summary.toString())
 
         bindPreferenceSummaryToValue(findPreference(RefreshTime))
         bindPreferenceSummaryToValue(findPreference(AnimationTime))
         bindPreferenceSummaryToValue(findPreference(FPSControl))
 
+        findPreference(Backup).onPreferenceClickListener = this
+        findPreference(Restore).onPreferenceClickListener = this
+        findPreference(Backup).onPreferenceChangeListener = mBackupRestorePreferenceChangeListener
+        findPreference(Restore).onPreferenceChangeListener = mBackupRestorePreferenceChangeListener
+
+        findPreference("Version").summary = BuildConfig.VERSION_NAME
+
 //        bindPreferenceSummaryToValue(findPreference(RefreshTime))
 //        bindPreferenceSummaryToValue(findPreference(AnimationTime))
 //        bindPreferenceSummaryToValue(findPreference("example_list"))
     }
+
 }

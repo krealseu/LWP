@@ -2,7 +2,6 @@ package org.kreal.lwp
 
 import android.app.Application
 import android.preference.PreferenceManager
-import com.squareup.leakcanary.LeakCanary
 import org.kreal.lwp.settings.PhotoFrameScale
 import org.kreal.lwp.settings.WallpaperSource
 
@@ -11,12 +10,8 @@ import org.kreal.lwp.settings.WallpaperSource
  *在应用启动时绑定leak canary，初始缩放化参数
  */
 class App : Application() {
-    private val useLeakCanary = true
     override fun onCreate() {
         super.onCreate()
-
-        if (useLeakCanary && !LeakCanary.isInAnalyzerProcess(this))
-            LeakCanary.install(this)
 
         if (!PreferenceManager.getDefaultSharedPreferences(baseContext).getBoolean("IsInit", false)) {
             val file = getFileStreamPath(WallpaperSource)

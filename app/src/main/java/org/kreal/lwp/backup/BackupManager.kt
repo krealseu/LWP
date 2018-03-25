@@ -2,6 +2,7 @@ package org.kreal.lwp.backup
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Environment
 import android.preference.PreferenceManager
 import android.widget.Toast
@@ -28,9 +29,9 @@ class BackupManager(private val context: Context) {
 
     private val pattern: Pattern = Pattern.compile(".(jpg|jpeg|png)$", Pattern.CASE_INSENSITIVE)
 
-    fun backup(name: String = "lwp.zip") {
+    fun backup(name: String) {
         saveConfigure()
-        val outputFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), name)
+        val outputFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "$name~")
         val zos = ZipOutputStream(FileOutputStream(outputFile))
         val byteArray = ByteArray(1024 * 100)
         zos.putNextEntry(ZipEntry("$WallpaperSource/"))
@@ -52,15 +53,31 @@ class BackupManager(private val context: Context) {
         zos.flush()
         zos.closeEntry()
         zos.finish()
+        val targetFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), name)
+        if (targetFile.exists())
+            targetFile.delete()
+        outputFile.renameTo(targetFile)
     }
 
-    fun restore(name: String = "lwp.zip") {
+    fun restore(name: String): Boolean {
         val backupFile = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), name)
         if (!backupFile.isFile) {
-            Toast.makeText(context, "Fail:File $name is't exists", Toast.LENGTH_SHORT).show()
-            return
+            return false
         }
-        val zis = ZipInputStream(FileInputStream(backupFile))
+        val fileInputStream = FileInputStream(backupFile)
+        restoreFromStream(fileInputStream)
+        fileInputStream.close()
+        return true
+    }
+
+    fun restoreFromUri(uri: Uri) {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        restoreFromStream(inputStream)
+        inputStream.close()
+    }
+
+    fun restoreFromStream(stream: InputStream) {
+        val zis = ZipInputStream(stream)
         while (true) {
             val entry = zis.nextEntry ?: break
             val byteArray = ByteArray(1024 * 100)

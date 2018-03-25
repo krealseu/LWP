@@ -19,6 +19,7 @@ import android.preference.PreferenceManager
 import android.preference.RingtonePreference
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
+import android.util.Log
 import android.view.MenuItem
 
 import org.kreal.lwp.R
@@ -35,12 +36,13 @@ import org.kreal.lwp.R
  * API Guide](http://developer.android.com/guide/topics/ui/settings.html) for more information on developing a Settings UI.
  */
 class SettingsActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fragmentManager.beginTransaction()
-                .replace(android.R.id.content, SettingsFragment())
-                .commit()
+        if (fragmentManager.findFragmentById(android.R.id.content) == null) {
+            fragmentManager.beginTransaction()
+                    .replace(android.R.id.content, SettingsFragment())
+                    .commit()
+        }
         setupActionBar()
     }
 

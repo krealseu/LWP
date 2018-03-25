@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,20 +34,21 @@ class StoragePermissionGrant : DialogFragment(), View.OnClickListener {
         fun onGrant()
     }
 
-    private lateinit var mListener: PermissionGrantListener
+    private var mListener: PermissionGrantListener? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is PermissionGrantListener)
             mListener = context
-        else throw ClassCastException(context.toString() + "must implement PermissionGrantListener")
+//        else throw ClassCastException(context.toString() + "must implement PermissionGrantListener")
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        dialog.setCanceledOnTouchOutside(false)
         val view = inflater.inflate(R.layout.stroge_permisson_grant, container, false)
         view.also {
-            it.findViewById<Button>(org.kreal.widget.filepickdialog.R.id.go_setting_button).setOnClickListener(this)
-            it.findViewById<Button>(org.kreal.widget.filepickdialog.R.id.grant_button).setOnClickListener(this)
+            it.findViewById<Button>(R.id.go_setting_button).setOnClickListener(this)
+            it.findViewById<Button>(R.id.grant_button).setOnClickListener(this)
         }
         return view
     }
@@ -54,7 +56,6 @@ class StoragePermissionGrant : DialogFragment(), View.OnClickListener {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (checkPermissions(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) context else activity)) {
-            mListener.onGrant()
             dialog.dismiss()
         }
     }
@@ -62,7 +63,6 @@ class StoragePermissionGrant : DialogFragment(), View.OnClickListener {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (checkPermissions(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) context else activity)) {
-            mListener.onGrant()
             dialog.dismiss()
         }
     }
@@ -72,12 +72,14 @@ class StoragePermissionGrant : DialogFragment(), View.OnClickListener {
             return super.show(manager, tag)
     }
 
-    override fun onCancel(dialog: DialogInterface?) {
-        super.onCancel(dialog)
-        if (checkPermissions(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) context else activity)) {
-            mListener.onGrant()
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        val context = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) context else activity)
+                ?: return
+        if (checkPermissions(context)) {
+            mListener?.onGrant()
         } else
-            mListener.onReject()
+            mListener?.onReject()
     }
 
     companion object {
