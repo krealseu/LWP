@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_action_refresh_red"
+        android:shortcutDisabledMessage="@string/shortcuts_fail"
+        android:shortcutId="changeWallpaper"
+        android:shortcutLongLabel="@string/change_wallpaper"
+        android:shortcutShortLabel="@string/change_wallpaper">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="org.kreal.lwp.ChangeWallpaperActivity"
+            android:targetPackage="org.kreal.lwp" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_action_settings_color"
+        android:shortcutDisabledMessage="@string/shortcuts_fail"
+        android:shortcutId="wallpaperSettings"
+        android:shortcutLongLabel="@string/wallpaper_settings"
+        android:shortcutShortLabel="@string/wallpaper_settings">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="org.kreal.lwp.settings.SettingsActivity"
+            android:targetPackage="org.kreal.lwp" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_action_live_wallpaper_color"
+        android:shortcutDisabledMessage="@string/shortcuts_fail"
+        android:shortcutId="wallpaper"
+        android:shortcutLongLabel="@string/set_live_wallpaper"
+        android:shortcutShortLabel="@string/set_live_wallpaper">
+        <intent android:action="android.service.wallpaper.LIVE_WALLPAPER_CHOOSER" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+</shortcuts>

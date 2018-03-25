@@ -6,6 +6,8 @@ import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.os.Environment
 import android.preference.PreferenceManager
+import android.support.v4.content.LocalBroadcastManager
+import android.util.Log
 import android.view.SurfaceHolder
 import android.view.WindowManager
 import org.kreal.lwp.models.PerspectiveModel
@@ -20,28 +22,8 @@ import javax.microedition.khronos.opengles.GL10
  * 壁纸的server，使用GLView
  */
 class LWPService : GLWallpaperService() {
-    var batteryLow = false
-    private val batteryReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                Intent.ACTION_BATTERY_LOW -> batteryLow = true
-                Intent.ACTION_POWER_CONNECTED -> batteryLow = false
-            }
-        }
-    }
 
-    override fun onCreateEngine(): Engine {
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(Intent.ACTION_BATTERY_LOW)
-        intentFilter.addAction(Intent.ACTION_POWER_CONNECTED)
-        baseContext.registerReceiver(batteryReceiver, intentFilter)
-        return SwitchEngine()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        baseContext.unregisterReceiver(batteryReceiver)
-    }
+    override fun onCreateEngine(): Engine = SwitchEngine()
 
     inner class SwitchEngine : GLEngine(), GLSurfaceView.Renderer, SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -69,6 +51,18 @@ class LWPService : GLWallpaperService() {
 
         private var animationTime: Long = PreferenceManager.getDefaultSharedPreferences(baseContext).getString(AnimationTime, "1000").toLong()
 
+        private var batteryLow = false
+
+        private val broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                when (intent?.action) {
+                    Intent.ACTION_BATTERY_LOW -> batteryLow = true
+                    Intent.ACTION_POWER_CONNECTED -> batteryLow = false
+                    ChangeWallpaperIntent -> changeWallpaper()
+                }
+            }
+        }
+
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
             when (key) {
                 RefreshTime -> refreshTime = (sharedPreferences.getString(key, "10").toFloat() * 60000).toLong()
@@ -88,6 +82,19 @@ class LWPService : GLWallpaperService() {
             setPreserveEGLContextOnPause(true)
 //            }
             setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY)
+
+            val batteryIntentFilter = IntentFilter()
+            batteryIntentFilter.addAction(Intent.ACTION_BATTERY_LOW)
+            batteryIntentFilter.addAction(Intent.ACTION_POWER_CONNECTED)
+            baseContext.registerReceiver(broadcastReceiver, batteryIntentFilter)
+            LocalBroadcastManager.getInstance(baseContext).registerReceiver(broadcastReceiver, IntentFilter(ChangeWallpaperIntent))
+        }
+
+        override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
+            Matrix.setLookAtM(mVMatrix, 0, 0f, 0f, 2f, 0f, 0f, 0f, 0f, 1f, 0f)
+            photoFrame = PhotoFrame()
+            photoFrame.setSrc(wallpapers.getRandomWallpaper())
+            MatrixState.setCamera(mVMatrix)
         }
 
         override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -96,13 +103,6 @@ class LWPService : GLWallpaperService() {
             photoFrame.setSize(2f * mPerspectiveScale, 2f * radio * mPerspectiveScale)
             Matrix.orthoM(mPMatrix, 0, -1.0f, 1.0f, -radio, radio, 1f, 3f)
             MatrixState.setProjMatrix(mPMatrix)
-        }
-
-        override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-            Matrix.setLookAtM(mVMatrix, 0, 0f, 0f, 2f, 0f, 0f, 0f, 0f, 1f, 0f)
-            photoFrame = PhotoFrame()
-            photoFrame.setSrc(wallpapers.getRandomWallpaper())
-            MatrixState.setCamera(mVMatrix)
         }
 
         override fun onDrawFrame(gl: GL10?) {
@@ -133,11 +133,14 @@ class LWPService : GLWallpaperService() {
         override fun onDestroy() {
             super.onDestroy()
             PreferenceManager.getDefaultSharedPreferences(baseContext).unregisterOnSharedPreferenceChangeListener(this)
+            baseContext.unregisterReceiver(broadcastReceiver)
+            LocalBroadcastManager.getInstance(baseContext).unregisterReceiver(broadcastReceiver)
         }
 
-        private fun changeWallpaper() {
+        fun changeWallpaper() {
             queueEvent(Runnable {
                 val name = wallpapers.getRandomWallpaper()
+                lastRefreshTime = System.currentTimeMillis()
                 photoFrame.setSrc(name)
                 requestRender()
             })
@@ -145,14 +148,12 @@ class LWPService : GLWallpaperService() {
 
         private var lastRefreshTime: Long = System.currentTimeMillis()
 
-        private fun isNeedRefresh(): Boolean {
-            val time = System.currentTimeMillis()
-            return if (Math.abs(time - lastRefreshTime) > refreshTime) {
-                lastRefreshTime = time
-                true
-            } else false
-        }
+        private fun isNeedRefresh(): Boolean = Math.abs(System.currentTimeMillis() - lastRefreshTime) > refreshTime
 
+    }
+
+    companion object {
+        const val ChangeWallpaperIntent = "org.kreal.lwp.action.CHANGE_WALLPAPER"
     }
 
     class FPSControl(fps: Int) {

@@ -88,4 +88,10 @@
     <string name="select">Selected 0</string>
     <string name="item_image">item_image</string>
     <string name="load_from_zip">Load info from zip</string>
+
+    <string name="add_widget">Add widget</string>
+    <string name="wallpaper_settings">Settings</string>
+    <string name="shortcuts_fail">Fail</string>
+    <string name="set_live_wallpaper">Set Live WP</string>
+    <string name="change_wallpaper">Random</string>
 </resources>

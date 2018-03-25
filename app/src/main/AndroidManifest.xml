@@ -28,6 +28,9 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
         <activity
             android:name=".settings.SettingsActivity"
@@ -93,6 +96,12 @@
         <service
             android:name=".backup.BackupService"
             android:exported="false" />
+
+        <activity
+            android:name=".ChangeWallpaperActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay" />
     </application>
 
 </manifest>
