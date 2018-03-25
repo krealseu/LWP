@@ -6,14 +6,17 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.SystemClock
+import android.util.Log
 
 /**
  * Created by lthee on 2017/5/26.
+ * 处理透视运动
  */
 
 class PerspectiveModel(context: Context) : SensorEventListener {
+    private val tag = PerspectiveModel::class.java.simpleName
     private val mSensorManager: SensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    private val mSensor: Sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+    private val mSensor: Sensor? = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 
     private var mEnabled = false
     private val maxAngle = 1f
@@ -41,10 +44,10 @@ class PerspectiveModel(context: Context) : SensorEventListener {
     }
 
     fun enable() {
-//        if (mSensor == null) {
-//            Log.w(TAG, "Cannot detect sensors. Not enabled")
-//            return
-//        }
+        if (mSensor == null) {
+            Log.w(tag, "Cannot detect sensors. Not enabled")
+            return
+        }
         if (!mEnabled) {
             //            xAngle = 0;
             //            yAngle = 0;
@@ -57,10 +60,10 @@ class PerspectiveModel(context: Context) : SensorEventListener {
     }
 
     fun disable() {
-//        if (mSensor == null) {
-//            Log.w(TAG, "Cannot detect sensors. Invalid disable")
-//            return
-//        }
+        if (mSensor == null) {
+            Log.w(tag, "Cannot detect sensors. Invalid disable")
+            return
+        }
         if (mEnabled) {
             mSensorManager.unregisterListener(this)
             mEnabled = false
