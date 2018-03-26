@@ -1,7 +1,7 @@
-package org.kreal.lwp.service.Transitions
+package org.kreal.lwp.service.transitions
 
 import android.opengl.GLES20
-import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import org.kreal.glutil.ShaderProgram
 import org.kreal.glutil.VertexArray
@@ -9,9 +9,10 @@ import org.kreal.lwp.service.PhotoFrame
 
 /**
  * Created by lthee on 2017/10/5.
+ * 画面左右内和关闭
  */
-class ApertureTransition(private val target: PhotoFrame, duration: Float = 1f) : Transition(duration) {
-    override var mInterpolator: Interpolator = AccelerateInterpolator()
+class CloseTransition(private val target: PhotoFrame, duration: Float = 1f) : Transition(duration) {
+    override var mInterpolator: Interpolator = DecelerateInterpolator()
     private val program = object : ShaderProgram(vertexShader, fragmentShader) {
         val positionHandle = GLES20.glGetAttribLocation(programID, A_POSOTIION)
         val fragcoordHandle = GLES20.glGetAttribLocation(programID, A_FLSGCOORD)
@@ -33,7 +34,7 @@ class ApertureTransition(private val target: PhotoFrame, duration: Float = 1f) :
             GLES20.glUniform1i(textureHandle2, 1)
         }
     }
-    private val texcoord =VertexArray(floatArrayOf(0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f))
+    private val texcoord = VertexArray(floatArrayOf(0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f))
 
     override fun applyTransition(matrix: FloatArray, delta: Float) {
         program.useProgram()
@@ -43,7 +44,7 @@ class ApertureTransition(private val target: PhotoFrame, duration: Float = 1f) :
         target.position.setVertexAttribPointer(0, program.positionHandle, 2, 0)
         target.imageOld.textureCoordinates.setVertexAttribPointer(0, program.texPositionHandle1, 2, 0)
         target.imageNew.textureCoordinates.setVertexAttribPointer(0, program.texPositionHandle2, 2, 0)
-        texcoord.setVertexAttribPointer(0,program.fragcoordHandle,2,0)
+        texcoord.setVertexAttribPointer(0, program.fragcoordHandle, 2, 0)
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
     }
 
@@ -52,7 +53,7 @@ class ApertureTransition(private val target: PhotoFrame, duration: Float = 1f) :
     }
 
     companion object {
-        private val vertexShader = "uniform mat4 u_MVPMatrix ;" +
+        private const val vertexShader = "uniform mat4 u_MVPMatrix ;" +
                 "attribute vec2 a_Postion;" +
                 "attribute vec2 a_mFlagCoord;" +
                 "varying vec2 v_mFlagCoord;" +
@@ -66,47 +67,32 @@ class ApertureTransition(private val target: PhotoFrame, duration: Float = 1f) :
                 "v_TextureCoord2=a_TextureCoordinates2;" +
                 "gl_Position = u_MVPMatrix * vec4(a_Postion,0,1);" +
                 "}"
-        private val fragmentShader = "precision mediump float;" +
+        private const val fragmentShader = "precision mediump float;" +
                 "varying vec2 v_mFlagCoord;" +
                 "varying vec2 v_TextureCoord1;" +
                 "uniform sampler2D s_Texture1;" +
                 "varying vec2 v_TextureCoord2;" +
                 "uniform sampler2D s_Texture2;" +
                 "uniform float radius;" +
-                "const float border = 0.03;" +
-                "bool in_circle(vec2 p, vec2 c, float r) {" +
-                "  float dx = (c.x - p.x);" +
-                "  float dy = (c.y - p.y);" +
-                "  dx *= dx;" +
-                "  dy *= dy;" +
-                "  return (dx + dy) <= (r * r);" +
-                "}" +
                 "void main() {" +
                 "  vec4 tex1 = texture2D(s_Texture1,v_TextureCoord1);" +
                 "  vec4 tex2 = texture2D(s_Texture2,v_TextureCoord2);" +
-                "  vec2 center = vec2(0.5, 0.5);" +
                 "  vec2 uv = v_mFlagCoord;" +
-                "  bool inCircle = in_circle(uv, center, radius);" +
-                "  bool inCircleWithoutBorder = in_circle(uv, center, radius - border);" +
-                "  if (inCircle && !inCircleWithoutBorder) {" +
-                "        uv -= center;" +
-                "        float dist =  sqrt(dot(uv, uv));" +
-                "        float t = 1.0 + smoothstep(radius, radius+border, dist)" +
-                "                - smoothstep(radius-border, radius, dist);" +
-                "        gl_FragColor = mix(tex1, tex2, t);" +
-                "    } else if (inCircle) {" +
-                "        gl_FragColor = tex2;" +
+                "  bool inCircle = abs(2.0 * uv.x - 1.0) < radius;" +
+                " if (inCircle) {" +
+                "    gl_FragColor = tex2;" +
                 "    } else {" +
                 "        gl_FragColor = tex1;" +
                 "    }" +
                 "}"
-        private val U_MVPMATRIX = "u_MVPMatrix"
-        private val A_POSOTIION = "a_Postion"
-        private val A_FLSGCOORD = "a_mFlagCoord"
-        private val A_TEXTURE_COORDINATES1 = "a_TextureCoordinates1"
-        private val A_TEXTURE_COORDINATES2 = "a_TextureCoordinates2"
-        private val U_RADIUS = "radius"
-        private val S_TEXTURE1 = "s_Texture1"
-        private val S_TEXTURE2 = "s_Texture2"
+
+        private const val U_MVPMATRIX = "u_MVPMatrix"
+        private const val A_POSOTIION = "a_Postion"
+        private const val A_FLSGCOORD = "a_mFlagCoord"
+        private const val A_TEXTURE_COORDINATES1 = "a_TextureCoordinates1"
+        private const val A_TEXTURE_COORDINATES2 = "a_TextureCoordinates2"
+        private const val U_RADIUS = "radius"
+        private const val S_TEXTURE1 = "s_Texture1"
+        private const val S_TEXTURE2 = "s_Texture2"
     }
 }

@@ -1,4 +1,4 @@
-package org.kreal.lwp.service.Transitions
+package org.kreal.lwp.service.transitions
 
 import android.opengl.GLES20
 import org.kreal.glutil.ShaderProgram
@@ -6,6 +6,7 @@ import org.kreal.lwp.service.PhotoFrame
 
 /**
  * Created by lthee on 2017/10/4.
+ * 色彩渐变
  */
 class MixTransition(val targer: PhotoFrame) : Transition() {
 
@@ -46,7 +47,7 @@ class MixTransition(val targer: PhotoFrame) : Transition() {
     }
 
     companion object {
-        private val vertexShader = "uniform mat4 u_MVPMatrix ;" +
+        private const val vertexShader = "uniform mat4 u_MVPMatrix ;" +
                 "attribute vec2 a_Postion;" +
                 "attribute vec2 a_TextureCoordinates1;" +
                 "varying vec2 v_TextureCoord1;" +
@@ -57,7 +58,7 @@ class MixTransition(val targer: PhotoFrame) : Transition() {
                 "v_TextureCoord2=a_TextureCoordinates2;" +
                 "gl_Position = u_MVPMatrix * vec4(a_Postion,0,1);" +
                 "}"
-        private val fragmentShader = "precision mediump float;" +
+        private const val fragmentShader = "precision mediump float;" +
                 "varying vec2 v_TextureCoord1;" +
                 "uniform sampler2D s_Texture1;" +
                 "varying vec2 v_TextureCoord2;" +
@@ -68,13 +69,13 @@ class MixTransition(val targer: PhotoFrame) : Transition() {
                 " vec4 texture2 = texture2D(s_Texture2,v_TextureCoord2);" +
                 "  gl_FragColor = mix(texture1,texture2,u_delta);" +
                 "}"
-        private val U_MVPMATRIX = "u_MVPMatrix"
-        private val A_POSOTIION = "a_Postion"
-        private val A_TEXTURE_COORDINATES1 = "a_TextureCoordinates1"
-        private val A_TEXTURE_COORDINATES2 = "a_TextureCoordinates2"
-        private val U_DELTER = "u_delta"
-        private val S_TEXTURE1 = "s_Texture1"
-        private val S_TEXTURE2 = "s_Texture2"
+        private const val U_MVPMATRIX = "u_MVPMatrix"
+        private const val A_POSOTIION = "a_Postion"
+        private const val A_TEXTURE_COORDINATES1 = "a_TextureCoordinates1"
+        private const val A_TEXTURE_COORDINATES2 = "a_TextureCoordinates2"
+        private const val U_DELTER = "u_delta"
+        private const val S_TEXTURE1 = "s_Texture1"
+        private const val S_TEXTURE2 = "s_Texture2"
     }
 
 }

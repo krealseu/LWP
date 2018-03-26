@@ -66,7 +66,10 @@ class LWPService : GLWallpaperService() {
                 CanMove -> canMove = sharedPreferences.getBoolean(key, false)
                 CanPerspectiveMove -> canPerspectiveMove = sharedPreferences.getBoolean(key, true)
                 FPSControl -> fpsControl.setFPS(sharedPreferences.getString(key, "30").toInt())
-                AnimationTime -> animationTime = sharedPreferences.getString(key, "1000").toLong()
+                AnimationTime -> {
+                    animationTime = sharedPreferences.getString(key, "1000").toLong()
+                    photoFrame.setAnimationTime(animationTime.toFloat() / 1000)
+                }
             }
         }
 
@@ -90,6 +93,7 @@ class LWPService : GLWallpaperService() {
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             Matrix.setLookAtM(mVMatrix, 0, 0f, 0f, 2f, 0f, 0f, 0f, 0f, 1f, 0f)
             photoFrame = PhotoFrame()
+            photoFrame.setAnimationTime(animationTime.toFloat() / 1000)
             photoFrame.setSrc(wallpapers.getRandomWallpaper())
             MatrixState.setCamera(mVMatrix)
         }
@@ -134,12 +138,14 @@ class LWPService : GLWallpaperService() {
             LocalBroadcastManager.getInstance(baseContext).unregisterReceiver(broadcastReceiver)
         }
 
-        fun changeWallpaper() {
+        private fun changeWallpaper() {
             queueEvent(Runnable {
-                val name = wallpapers.getRandomWallpaper()
-                lastRefreshTime = System.currentTimeMillis()
-                photoFrame.setSrc(name)
-                requestRender()
+                if (isVisible) {
+                    val name = wallpapers.getRandomWallpaper()
+                    lastRefreshTime = System.currentTimeMillis()
+                    photoFrame.setSrc(name)
+                    requestRender()
+                }
             })
         }
 

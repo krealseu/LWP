@@ -2,12 +2,9 @@ package org.kreal.lwp.service.imageview
 
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.graphics.RectF
 import android.opengl.GLES20
 import android.opengl.GLUtils
-import android.util.Log
 import org.kreal.glutil.VertexArray
-import org.kreal.lwp.service.Transitions.Transition
 import java.nio.IntBuffer
 
 /**
@@ -45,7 +42,7 @@ open class PhotoContainer(private val mutable: Boolean, var width: Float = 1.0f,
         position = VertexArray(floatArrayOf(-width / 2f, -height / 2f, width / 2f, -height / 2f, -width / 2f, height / 2f, width / 2f, height / 2f))
     }
 
-    fun recycle() {
+    open fun recycle() {
         photoProgram.recycle()
         photoFrameImage?.recycle()
     }
@@ -69,7 +66,7 @@ open class PhotoContainer(private val mutable: Boolean, var width: Float = 1.0f,
             state = false
             if (contentMatch(path))
                 return
-            var options = BitmapFactory.Options()
+            val options = BitmapFactory.Options()
             options.inJustDecodeBounds = true
             BitmapFactory.decodeFile(path, options)
             val tempTextureWidth = options.outWidth
@@ -104,19 +101,19 @@ open class PhotoContainer(private val mutable: Boolean, var width: Float = 1.0f,
         }
 
         fun recycle() {
-            var intbuffer = IntBuffer.allocate(1)
-            intbuffer.put(texture)
-            GLES20.glDeleteTextures(1, intbuffer)
+            val intBuffer = IntBuffer.allocate(1)
+            intBuffer.put(texture)
+            GLES20.glDeleteTextures(1, intBuffer)
         }
 
 
-        fun updateTextureCoordinates() {
+//        fun updateTextureCoordinates() {
 //            val temp = photoContainer.height * textureWidth / photoContainer.width / (textureHeight)
 //            textureCoordinates = when (temp > 1) {
 //                true -> VertexArray(floatArrayOf(0.5f - 1 / temp / 2, 1f, 0.5f + 1 / temp / 2, 1f, 0.5f - 1 / temp / 2, 0f, 0.5f + 1 / temp / 2, 0f))
 //                false -> VertexArray(floatArrayOf(0f, 0.5f + temp / 2, 1f, 0.5f + temp / 2, 0f, 0.5f - temp / 2, 1f, 0.5f - temp / 2))
 //            }
-        }
+//        }
 
         fun bindToPhotoContainer(photoContainer: PhotoContainer): PhotoFrameImage {
             if (photoContainer.mutable) {
@@ -127,7 +124,7 @@ open class PhotoContainer(private val mutable: Boolean, var width: Float = 1.0f,
             val pw = photoContainer.width
             val th = textureHeight
             val tw = textureWidth
-            var points = floatArrayOf(
+            val points = floatArrayOf(
                     -pw / 2, ph / 2,
                     pw / 2, ph / 2,
                     -pw / 2, -ph / 2,
@@ -151,7 +148,7 @@ open class PhotoContainer(private val mutable: Boolean, var width: Float = 1.0f,
         }
     }
 
-    enum class ScaleType private constructor() {
+    enum class ScaleType {
         CENTER,
         CENTER_CROP,
         CENTER_INSIDE,
