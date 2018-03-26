@@ -15,7 +15,7 @@ android {
         versionName "1.2.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-    buildTypes {
+    buildTypes {wonder
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -23,7 +23,9 @@ android {
                 variant.outputs.each { output ->
                     def outputFile = output.outputFile
                     if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                        outputFile.renameTo("app/release/LWP-${defaultConfig.versionName}-release.apk")
+                        def targetFile = new File(outputFile.parentFile, "LWP-${defaultConfig.versionName}-release.apk")
+                        targetFile.delete()
+                        outputFile.renameTo(new File(outputFile.parentFile, "LWP-${defaultConfig.versionName}-release.apk"))
                     }
                 }
             }

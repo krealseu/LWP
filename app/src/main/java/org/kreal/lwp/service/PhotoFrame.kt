@@ -1,11 +1,8 @@
 package org.kreal.lwp.service
 
-import android.util.Log
-import org.kreal.lwp.service.transitions.ApertureTransition
-import org.kreal.lwp.service.transitions.CloseTransition
-import org.kreal.lwp.service.transitions.MixTransition
-import org.kreal.lwp.service.transitions.Transition
+
 import org.kreal.lwp.service.imageview.PhotoContainer
+import org.kreal.lwp.service.transitions.*
 import java.util.*
 
 /**
@@ -15,7 +12,7 @@ import java.util.*
 
 class PhotoFrame : PhotoContainer(false) {
 
-    private var transtions: Array<Transition> = arrayOf(MixTransition(this), ApertureTransition(this), CloseTransition(this))
+    private var transtions: Array<Transition> = arrayOf(MixTransition(this), ApertureTransition(this), CloseTransition(this), BlindsTransition(this))
 
     private var transition: Transition? = null
 
