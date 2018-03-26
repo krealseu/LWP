@@ -4,16 +4,13 @@ import android.content.*
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import android.os.Environment
 import android.preference.PreferenceManager
 import android.support.v4.content.LocalBroadcastManager
-import android.util.Log
 import android.view.SurfaceHolder
 import android.view.WindowManager
 import org.kreal.lwp.models.PerspectiveModel
 import org.kreal.lwp.models.WallpaperManager
 import org.kreal.lwp.settings.*
-import java.io.File
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 

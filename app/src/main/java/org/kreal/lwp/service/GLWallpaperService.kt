@@ -1,25 +1,21 @@
 package org.kreal.lwp.service
 
-import android.content.Context
 import android.opengl.GLSurfaceView
 import android.opengl.GLSurfaceView.Renderer
 import android.service.wallpaper.WallpaperService
 import android.view.SurfaceHolder
-import android.view.SurfaceView
 
 /**
  * Created by lthee on 2017/5/3.
+ * Wallpaper Service Engine 行为改为向GLSurfaceView
  */
 
 abstract class GLWallpaperService : WallpaperService() {
     open inner class GLEngine : WallpaperService.Engine() {
-        private val mGLSurfaceView = GLEngineView(applicationContext)
 
-        internal inner class GLEngineView(context: Context) : GLSurfaceView(context) {
-
-            override fun getHolder(): SurfaceHolder {
-                return surfaceHolder
-            }
+        private val mGLSurfaceView = object : GLSurfaceView(baseContext) {
+            //将GLSurfaceView的要使用的surfaceHolder重载替换为Engine的SurfaceHolder
+            override fun getHolder(): SurfaceHolder = surfaceHolder
 
             public override fun onDetachedFromWindow() {
                 super.onDetachedFromWindow()
@@ -42,8 +38,8 @@ abstract class GLWallpaperService : WallpaperService() {
             mGLSurfaceView.requestRender()
         }
 
-        fun setPreserveEGLContextOnPause(b: Boolean) {
-            mGLSurfaceView.preserveEGLContextOnPause = b
+        fun setPreserveEGLContextOnPause(boolean: Boolean) {
+            mGLSurfaceView.preserveEGLContextOnPause = boolean
         }
 
         fun queueEvent(r: Runnable) {
