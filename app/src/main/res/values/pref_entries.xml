@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="AnimationTime_option">
-        <item>0.5 s</item>
+        <item>0.8 s</item>
         <item>1 s</item>
+        <item>1.2 s</item>
         <item>1.5 s</item>
-        <item>2 s</item>
     </string-array>
     <string-array name="AnimationTime_value">
-        <item>500</item>
+        <item>800</item>
         <item>1000</item>
+        <item>1200</item>
         <item>1500</item>
-        <item>2000</item>
     </string-array>
     <string-array name="FPS_option">
         <item>60</item>
