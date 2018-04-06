@@ -9,4 +9,8 @@
 5. 可调节壁纸刷新的FPS
   
 ## Download
-<a href="app/release/LWP-1.2.1-release.apk?raw=true">LWP-1.2.1-release.apk</a><br/>
+Version | Log
+--- | ---
+[LWP-1.2.1-release.apk](app/release/LWP-1.2.1-release.apk?raw=true) | 初次发布
+[LWP-1.2.2-release.apk](app/release/LWP-1.2.2-release.apk?raw=true) | 增加百叶窗过渡，透视小修改
+
