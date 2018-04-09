@@ -65,12 +65,7 @@ class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallba
 
     override fun onClick(view: View) {
         when (view.id) {
-            R.id.fab -> {
-                when (view.tag) {
-                    fabTagDelete -> actionDelete()
-                    else -> actionAdd()
-                }
-            }
+            R.id.fab -> actionAdd()
             R.id.select_bar_cancel -> actionCancel()
             R.id.select_bar_delete -> actionDelete()
         }
@@ -111,16 +106,14 @@ class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallba
         if (visible) {
             selectBar.visibility = View.VISIBLE
             selectBarInfo.text = String.format("Selected %d", mAdapterData.selects.size)
-            fab.tag = fabTagDelete
-            fab.setImageResource(R.drawable.ic_fab_delete)
+            fab.visibility = View.INVISIBLE
         } else {
             selectBar.visibility = View.INVISIBLE
-            fab.tag = fabTagAdd
-            fab.setImageResource(R.drawable.ic_fab_add)
+            fab.visibility = View.VISIBLE
         }
         val animation = if (visible) ScaleAnimation(1.0f, 1.0f, 0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f) else AlphaAnimation(1f, 0f)
         animation.duration = 200
-        val annotation2 = AlphaAnimation(0.8f, 1f)
+        val annotation2 = if (visible) ScaleAnimation(1.0f, 0.0f, 1.0f, 0.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f) else ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f)
         annotation2.duration = 200
         fab.startAnimation(annotation2)
         selectBar.startAnimation(animation)
@@ -140,8 +133,6 @@ class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallba
 
     private val loaderID: Int = 233
     private val requestImageCode = 21
-    private val fabTagAdd = "add"
-    private val fabTagDelete = "delete"
 
     private val mAdapterData: ImageAdapterData = ImageAdapterData(arrayListOf())
     private lateinit var mAdapter: ImageAdapter
