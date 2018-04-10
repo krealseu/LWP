@@ -6,6 +6,7 @@ import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import android.preference.PreferenceManager
 import android.support.v4.content.LocalBroadcastManager
+import android.util.Log
 import android.view.SurfaceHolder
 import android.view.WindowManager
 import org.kreal.lwp.models.PerspectiveModel
@@ -28,13 +29,13 @@ class LWPService : GLWallpaperService() {
 
         private val mPMatrix = FloatArray(16)
 
-        private var perspectiveModel = PerspectiveModel(baseContext)
+        private val perspectiveModel = PerspectiveModel(baseContext)
 
         private lateinit var photoFrame: PhotoFrame
 
-        private var display = (applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
+        private val display = (baseContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
 
-        private var mPerspectiveScale = PreferenceManager.getDefaultSharedPreferences(baseContext).getFloat(PhotoFrameScale, 1.0f)
+        private val mPerspectiveScale = PreferenceManager.getDefaultSharedPreferences(baseContext).getFloat(PhotoFrameScale, 1.0f)
 
         private val fpsControl: FPSControl = FPSControl(PreferenceManager.getDefaultSharedPreferences(baseContext).getString(FPSControl, "30").toInt())
 
@@ -108,12 +109,14 @@ class LWPService : GLWallpaperService() {
 
         override fun onDrawFrame(gl: GL10?) {
             MatrixState.setInitStack()
-            val screenRotation = display.rotation
-            val perspectivePos: FloatArray = if (canPerspectiveMove) perspectiveModel.getValue(screenRotation) else floatArrayOf(0f, 0f)
-            MatrixState.translate(perspectivePos[1] * (mPerspectiveScale - 1) / 2, -perspectivePos[0] * (mPerspectiveScale - 1) / 2, 0f)
+            if (canPerspectiveMove) {
+                val perspectivePos: FloatArray = perspectiveModel.getValue(display.rotation)
+                MatrixState.translate(perspectivePos[1] * (mPerspectiveScale - 1) / 2, -perspectivePos[0] * (mPerspectiveScale - 1) / 2, 0f)
+            }
             photoFrame.draw(MatrixState.getFinalMatrix())
             fpsControl.blockWait()
-            requestRender()
+            if (canPerspectiveMove || photoFrame.isTransition())
+                requestRender()
         }
 
         override fun onVisibilityChanged(visible: Boolean) {

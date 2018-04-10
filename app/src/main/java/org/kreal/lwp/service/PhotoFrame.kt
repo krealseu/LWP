@@ -12,12 +12,12 @@ import java.util.*
 
 class PhotoFrame : PhotoContainer(false) {
 
-    private var transtions: Array<Transition> = arrayOf(MixTransition(this), ApertureTransition(this), CloseTransition(this), BlindsTransition(this))
+    private var transitions: Array<Transition> = arrayOf(MixTransition(this), ApertureTransition(this), CloseTransition(this), BlindsTransition(this))
 
     private var transition: Transition? = null
 
     private val setTransition: () -> Transition? = {
-        transtions[Random().nextInt(transtions.size)].reset()
+        transitions[Random().nextInt(transitions.size)].reset()
     }
 
     var imageOld = PhotoFrameImage()
@@ -26,7 +26,7 @@ class PhotoFrame : PhotoContainer(false) {
         private set
 
     fun setAnimationTime(duration: Float) {
-        transtions.forEach { it.setDuration(duration) }
+        transitions.forEach { it.setDuration(duration) }
     }
 
     override fun draw(mvMatrix: FloatArray) {
@@ -68,8 +68,10 @@ class PhotoFrame : PhotoContainer(false) {
         }
     }
 
+    fun isTransition() = transition?.isRunning == true
+
     override fun recycle() {
         super.recycle()
-        transtions.forEach { it.recycle() }
+        transitions.forEach { it.recycle() }
     }
 }
