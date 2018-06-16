@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="org.kreal.lwp.MainActivity">
+    tools:context="org.kreal.lwp.main.MainActivity">
     <item
         android:id="@+id/action_live_wallpaper"
         android:icon="@drawable/ic_action_live_wallpaper"

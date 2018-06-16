@@ -79,14 +79,14 @@ open class PhotoContainer(private val mutable: Boolean, var width: Float = 1.0f,
                 val textures = IntArray(1)
                 GLES20.glGenTextures(1, textures, 0)
                 if (textures[0] == 0)
-                    throw RuntimeException("Error Loading Textue")
+                    throw RuntimeException("Error Loading Texture")
                 this.texture = textures[0]
             }
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture)
             //纹理过滤
-            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_DEPTH_CLEAR_VALUE.toFloat())
-            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE.toFloat())
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
 
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
@@ -130,18 +130,26 @@ open class PhotoContainer(private val mutable: Boolean, var width: Float = 1.0f,
                     -pw / 2, -ph / 2,
                     pw / 2, -ph / 2)
             val matrix = Matrix()
-            val temp = ph * tw / pw / th
-            when (temp > 1) {
-                true -> matrix.setScale(th / ph, th / ph)
-                false -> matrix.setScale(tw / pw, tw / pw)
+            when (photoContainer.scaleType) {
+                ScaleType.CENTER_CROP -> {
+                    when (ph * tw / pw / th > 1) {
+                        true -> matrix.setScale(th / ph, th / ph)
+                        false -> matrix.setScale(tw / pw, tw / pw)
+                    }
+                }
+                ScaleType.CENTER_INSIDE -> {
+                    when (ph * tw / pw / th < 1) {
+                        true -> matrix.setScale(th / ph, th / ph)
+                        false -> matrix.setScale(tw / pw, tw / pw)
+                    }
+                }
+                ScaleType.CENTER -> Unit
+                else -> Unit
             }
 
             matrix.mapPoints(points, 0, points, 0, 4)
             for (i in 0..7) {
-                if (i % 2 == 0)
-                    points[i] /= tw
-                else points[i] /= th
-                points[i] += 0.5f
+                points[i] = points[i] / (if (i % 2 != 0) th else tw) + 0.5f
             }
             textureCoordinates = VertexArray(points)
             return this

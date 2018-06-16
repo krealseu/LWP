@@ -1,4 +1,4 @@
-package org.kreal.lwp
+package org.kreal.lwp.main
 
 import android.app.Activity
 import android.content.ComponentName
@@ -24,11 +24,14 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import kotlinx.android.synthetic.main.content_main.*
+import org.kreal.lwp.R
 import org.kreal.lwp.adapters.ImageAdapter
 import org.kreal.lwp.adapters.ImageAdapterData
 import org.kreal.lwp.loader.WallpaperLoader
 import org.kreal.lwp.models.WallpaperManager
+import org.kreal.lwp.models.WallpaperManagerImpl
 import org.kreal.lwp.settings.SettingsActivity
+import org.kreal.lwp.settings.SettingsFragment
 import org.kreal.lwp.settings.WallpaperSource
 import java.io.File
 import java.util.*
@@ -148,7 +151,15 @@ class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallba
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        if (fragmentManager.findFragmentById(android.R.id.content) == null) {
+            val view = MainFragment()
+            fragmentManager.beginTransaction()
+                    .replace(android.R.id.content, view)
+                    .commit()
+            MainPresenter(view, WallpaperManagerImpl(baseContext))
+        }
+
+//        setContentView(R.layout.activity_main)
         //restore data
         savedInstanceState?.also {
             mAdapterData.selects.addAll(it.getParcelableArrayList("SELECT"))
@@ -160,27 +171,27 @@ class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallba
         val num = if (display.widthPixels >= 1200) display.widthPixels / 400 else 3
 
         // init var
-        fab = findViewById(R.id.fab)
-        selectBar = findViewById(R.id.select_bar)
-        selectBarDelete = findViewById(R.id.select_bar_delete)
-        selectBarCancel = findViewById(R.id.select_bar_cancel)
-        selectBarInfo = findViewById(R.id.select_bar_info)
-        mAdapter = ImageAdapter(mAdapterData, display.heightPixels / num)
-        gridlayoutManager = GridLayoutManager(baseContext, num)
-        wallpaperManager = WallpaperManager(File(baseContext.filesDir, WallpaperSource))
-
-        fab.setOnClickListener(this)
-        selectBarCancel.setOnClickListener(this)
-        selectBarDelete.setOnClickListener(this)
-        mAdapter.setOnItemClickListener(this)
-        mAdapter.setOnItemLongClickListener(this)
-        wallpaperRecycleView.layoutManager = gridlayoutManager
-        wallpaperRecycleView.adapter = mAdapter
-
-        if (!mAdapterData.selects.isEmpty())
-            showOrHideSelectView(true)
-
-        loaderManager.initLoader(loaderID, null, this)
+//        fab = findViewById(R.id.fab)
+//        selectBar = findViewById(R.id.select_bar)
+//        selectBarDelete = findViewById(R.id.select_bar_delete)
+//        selectBarCancel = findViewById(R.id.select_bar_cancel)
+//        selectBarInfo = findViewById(R.id.select_bar_info)
+//        mAdapter = ImageAdapter(mAdapterData, display.heightPixels / num)
+//        gridlayoutManager = GridLayoutManager(baseContext, num)
+//        wallpaperManager = WallpaperManager(File(baseContext.filesDir, WallpaperSource))
+//
+//        fab.setOnClickListener(this)
+//        selectBarCancel.setOnClickListener(this)
+//        selectBarDelete.setOnClickListener(this)
+//        mAdapter.setOnItemClickListener(this)
+//        mAdapter.setOnItemLongClickListener(this)
+//        wallpaperRecycleView.layoutManager = gridlayoutManager
+//        wallpaperRecycleView.adapter = mAdapter
+//
+//        if (!mAdapterData.selects.isEmpty())
+//            showOrHideSelectView(true)
+//
+//        loaderManager.initLoader(loaderID, null, this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -189,30 +200,6 @@ class MainActivity : AppCompatActivity(), android.app.LoaderManager.LoaderCallba
             when (requestCode) {
                 requestImageCode -> wallpaperManager.add(baseContext, data?.data!!)
             }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_settings -> {
-                startActivity(Intent(baseContext, SettingsActivity::class.java))
-                return true
-            }
-            R.id.action_live_wallpaper -> {
-                val intent = Intent(android.app.WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
-                val componentName = ComponentName("org.kreal.lwp", "org.kreal.lwp.service.LWPService")
-                intent.putExtra(android.app.WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, componentName)
-                startActivity(intent)
-                return true
-            }
-            else -> {
-                super.onOptionsItemSelected(item)
-            }
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
