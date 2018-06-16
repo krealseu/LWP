@@ -114,9 +114,10 @@ class LWPService : GLWallpaperService() {
                 MatrixState.translate(perspectivePos[1] * (mPerspectiveScale - 1) / 2, -perspectivePos[0] * (mPerspectiveScale - 1) / 2, 0f)
             }
             photoFrame.draw(MatrixState.getFinalMatrix())
-            fpsControl.blockWait()
-            if (canPerspectiveMove || photoFrame.isTransition())
-                requestRender()
+            fpsControl.asyncWait {
+                if (canPerspectiveMove || photoFrame.isTransition())
+                    requestRender()
+            }
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
@@ -170,42 +171,37 @@ class LWPService : GLWallpaperService() {
 
         private var frameDuration: Long = (nanosPERSecond / fps).toLong()
 
+        private var sleepTime: Long = 0L
+
+        private var lastRefreshTime: Long = 0L
+
         fun setFPS(fps: Int) {
             frameDuration = (nanosPERSecond / fps).toLong()
         }
 
-        private var lastFpsInfo: FpsInfo = FpsInfo(System.nanoTime(), 0, 0)
-
         fun asyncWait(request: () -> Unit) {
             val showTime = System.nanoTime()
             Thread {
-                val workDuration = showTime - lastFpsInfo.leaveTime
-
-                val nextWorkDuration = (workDuration + lastFpsInfo.workDuration) shr 1
-
-                val tmp = frameDuration - nextWorkDuration + showTime
-                val timeToSleepNanos = tmp - System.nanoTime()
-                if (timeToSleepNanos > 0)
-                    Thread.sleep(timeToSleepNanos / nanosPERMilli, (timeToSleepNanos % nanosPERMilli).toInt())
-                lastFpsInfo = FpsInfo(showTime, workDuration, System.nanoTime())
+                sleepTime -= (showTime - lastRefreshTime - frameDuration)
+                if (sleepTime <= 0) {
+                    sleepTime = 0
+                } else {
+                    Thread.sleep(sleepTime / nanosPERMilli, (sleepTime % nanosPERMilli).toInt())
+                }
+                lastRefreshTime = showTime
                 request()
             }.start()
         }
 
         fun blockWait() {
             val showTime = System.nanoTime()
-            val workDuration = showTime - lastFpsInfo.leaveTime
-
-            val nextWorkDuration = (workDuration + lastFpsInfo.workDuration) shr 1
-
-            val tmp = frameDuration - nextWorkDuration + showTime
-            val timeToSleepNanos = tmp - System.nanoTime()
-            if (timeToSleepNanos > 0)
-                Thread.sleep(timeToSleepNanos / nanosPERMilli, (timeToSleepNanos % nanosPERMilli).toInt())
-            lastFpsInfo = FpsInfo(showTime, workDuration, System.nanoTime())
+            sleepTime -= (showTime - lastRefreshTime - frameDuration)
+            if (sleepTime <= 0) {
+                sleepTime = 0
+            } else {
+                Thread.sleep(sleepTime / nanosPERMilli, (sleepTime % nanosPERMilli).toInt())
+            }
+            lastRefreshTime = showTime
         }
-
-        data class FpsInfo(var showTime: Long, var workDuration: Long, val leaveTime: Long)
     }
-
 }
