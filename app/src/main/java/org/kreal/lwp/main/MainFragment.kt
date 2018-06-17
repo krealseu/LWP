@@ -73,7 +73,15 @@ class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
         selectBarCancel.setOnClickListener(this)
         selectBarDelete.setOnClickListener(this)
 
-        adapter.selectState = adapter.selectState
+        if (adapter.selectState) {
+            selectBar.visibility = View.VISIBLE
+            selectBarInfo.text = String.format("Selected %d", adapter.selectedItems.size)
+            fab.visibility = View.INVISIBLE
+        } else {
+            selectBar.visibility = View.INVISIBLE
+            fab.visibility = View.VISIBLE
+        }
+
         return view
     }
 
@@ -156,7 +164,7 @@ class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
         startActivity(intent)
     }
 
-    private fun setSelectViewVisiable(visible: Boolean) {
+    private fun setSelectViewVisible(visible: Boolean) {
         if (visible) {
             selectBar.visibility = View.VISIBLE
             selectBarInfo.text = String.format("Selected %d", adapter.selectedItems.size)
@@ -201,7 +209,7 @@ class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
         var selectState = false
             set(value) {
                 if (!value) selectedItems.clear()
-                setSelectViewVisiable(value)
+                setSelectViewVisible(value)
                 field = value
                 notifyDataSetChanged()
             }

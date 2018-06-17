@@ -1,10 +1,12 @@
 package org.kreal.lwp.share
 
 import android.app.IntentService
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import org.kreal.lwp.R
@@ -35,8 +37,12 @@ class ShareDealService : IntentService("ShareDealService") {
                             .setContentText("total:${uriList.size} success:$result fail:${uriList.size - result}")
                             .setSmallIcon(R.mipmap.ic_launcher)
                             .setAutoCancel(true)
+                            .setChannelId("LWPShareDeal")
                             .build()
                     val nm = baseContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        nm.createNotificationChannel(NotificationChannel("LWPShareDeal", "LWPShareDeal", NotificationManager.IMPORTANCE_LOW))
+                    }
                     nm.notify("LWPShareDeal", 233, notification)
                 } else if (it.type == Zip) {
                     it.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM).forEach {
@@ -49,6 +55,9 @@ class ShareDealService : IntentService("ShareDealService") {
                             .setAutoCancel(true)
                             .build()
                     val nm = baseContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        nm.createNotificationChannel(NotificationChannel("LWPShareDeal", "LWPShareDeal", NotificationManager.IMPORTANCE_LOW))
+                    }
                     nm.notify("LWPShareDeal", 233, notification)
                 }
             }
