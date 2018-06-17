@@ -2,6 +2,8 @@ package org.kreal.lwp
 
 import android.app.Application
 import android.preference.PreferenceManager
+import org.kreal.lwp.models.IWallpaperManager
+import org.kreal.lwp.models.WallpaperManagerImpl
 import org.kreal.lwp.settings.PhotoFrameScale
 import org.kreal.lwp.settings.WallpaperSource
 
@@ -12,6 +14,8 @@ import org.kreal.lwp.settings.WallpaperSource
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
+
+        wallpaperManager = WallpaperManagerImpl(applicationContext)
 
         if (!PreferenceManager.getDefaultSharedPreferences(baseContext).getBoolean("IsInit", false)) {
             val file = getFileStreamPath(WallpaperSource)
@@ -28,5 +32,10 @@ class App : Application() {
                     .putBoolean("IsInit", true)
                     .apply()
         }
+    }
+
+    companion object {
+        lateinit var wallpaperManager: IWallpaperManager
+            private set
     }
 }

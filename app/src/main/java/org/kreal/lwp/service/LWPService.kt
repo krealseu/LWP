@@ -9,6 +9,7 @@ import android.support.v4.content.LocalBroadcastManager
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.WindowManager
+import org.kreal.lwp.App
 import org.kreal.lwp.models.PerspectiveModel
 import org.kreal.lwp.models.WallpaperManager
 import org.kreal.lwp.settings.*
@@ -38,8 +39,6 @@ class LWPService : GLWallpaperService() {
         private val mPerspectiveScale = PreferenceManager.getDefaultSharedPreferences(baseContext).getFloat(PhotoFrameScale, 1.0f)
 
         private val fpsControl: FPSControl = FPSControl(PreferenceManager.getDefaultSharedPreferences(baseContext).getString(FPSControl, "30").toInt())
-
-        private val wallpapers = WallpaperManager(baseContext.getFileStreamPath(WallpaperSource))
 
         private var refreshTime: Long = (PreferenceManager.getDefaultSharedPreferences(baseContext).getString(RefreshTime, "10").toFloat() * 60000).toLong()
 
@@ -95,7 +94,7 @@ class LWPService : GLWallpaperService() {
             Matrix.setLookAtM(mVMatrix, 0, 0f, 0f, 2f, 0f, 0f, 0f, 0f, 1f, 0f)
             photoFrame = PhotoFrame()
             photoFrame.setAnimationTime(animationTime.toFloat() / 1000)
-            photoFrame.setSrc(wallpapers.getRandomWallpaper())
+            photoFrame.setSrc(App.wallpaperManager.getRandom().path)
             MatrixState.setCamera(mVMatrix)
         }
 
@@ -145,7 +144,7 @@ class LWPService : GLWallpaperService() {
         private fun changeWallpaper() {
             queueEvent(Runnable {
                 if (isVisible) {
-                    val name = wallpapers.getRandomWallpaper()
+                    val name = App.wallpaperManager.getRandom().path
                     lastRefreshTime = System.currentTimeMillis()
                     photoFrame.setSrc(name)
                     requestRender()
