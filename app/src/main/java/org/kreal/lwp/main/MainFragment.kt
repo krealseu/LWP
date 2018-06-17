@@ -62,7 +62,7 @@ class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
             selectBarInfo = findViewById(R.id.select_bar_info)
             with(findViewById<RecyclerView>(R.id.wallpaperRecycleView)) {
                 val display = resources.displayMetrics
-                val num = if (display.widthPixels >= 1200) display.widthPixels / 400 else 3
+                val num = if (display.widthPixels / display.densityDpi > 3) display.widthPixels / display.densityDpi else 3
                 this@MainFragment.adapter.imageHeight = display.heightPixels / num
                 adapter = this@MainFragment.adapter
                 layoutManager = GridLayoutManager(context, num)

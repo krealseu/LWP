@@ -94,11 +94,9 @@ class ShareDealActivity : AppCompatActivity(), ImageAdapter.OnItemClickListener 
         frameLayout.addView(button, buttonLayout)
         setContentView(frameLayout)
 
-        val display = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
-        val point = Point()
-        display.getSize(point)
-        val num = if (point.x >= 1000) point.x / 500 else 2
-        val adapter = ImageAdapter(ImageAdapterData(arrayList), (point.y / num))
+        val display = resources.displayMetrics
+        val num = if (display.widthPixels / display.densityDpi > 3) display.widthPixels / display.densityDpi else 3
+        val adapter = ImageAdapter(ImageAdapterData(arrayList), (display.heightPixels / num))
         recyclerView.layoutManager = GridLayoutManager(baseContext, num)
         recyclerView.adapter = adapter
         adapter.setOnItemClickListener(this)
