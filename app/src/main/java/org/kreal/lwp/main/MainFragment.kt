@@ -12,7 +12,6 @@ import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.*
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
@@ -22,6 +21,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import kotlinx.android.synthetic.main.content_main.*
 import org.kreal.lwp.R
 import org.kreal.lwp.settings.SettingsActivity
 import java.io.File
@@ -29,15 +29,23 @@ import java.io.File
 class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
 
     private val requestImageCode = 21
+
     private val selectImages: MutableList<Uri> = arrayListOf()
-    private lateinit var adapter: ImageAdapter
+
+    private val adapter: ImageAdapter = ImageAdapter(emptyList())
 
     private lateinit var presenter: MainContract.Presenter
+
     private lateinit var mAdapter: ImageAdapter
+
     private lateinit var fab: FloatingActionButton
+
     private lateinit var selectBar: FrameLayout
+
     private lateinit var selectBarCancel: ImageView
+
     private lateinit var selectBarDelete: ImageView
+
     private lateinit var selectBarInfo: TextView
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -55,16 +63,17 @@ class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
             with(findViewById<RecyclerView>(R.id.wallpaperRecycleView)) {
                 val display = resources.displayMetrics
                 val num = if (display.widthPixels >= 1200) display.widthPixels / 400 else 3
-                this@MainFragment.adapter = ImageAdapter(emptyList(), display.heightPixels / num)
+                this@MainFragment.adapter.imageHeight = display.heightPixels / num
                 adapter = this@MainFragment.adapter
                 layoutManager = GridLayoutManager(context, num)
             }
         }
 
-
         fab.setOnClickListener(this)
         selectBarCancel.setOnClickListener(this)
         selectBarDelete.setOnClickListener(this)
+
+        adapter.selectState = adapter.selectState
         return view
     }
 
@@ -104,6 +113,11 @@ class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
         }
     }
 
+    fun onBackPressed() = if (adapter.selectState) {
+        adapter.selectState = false
+        true
+    } else false
+
     /**
      * 添加一张壁纸
      */
@@ -120,18 +134,15 @@ class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
      * 删除选中的壁纸
      */
     private fun actionDelete() {
-        setSelectViewVisiable(false)
-        presenter.deletePaper(*selectImages.toTypedArray())
-        selectImages.clear()
+        presenter.deletePaper(*adapter.selectedItems.toTypedArray())
+        adapter.selectState = false
     }
 
     /**
      * 取消选择
      */
     private fun actionCancel() {
-        setSelectViewVisiable(false)
-        selectImages.clear()
-
+        adapter.selectState = false
     }
 
     /**
@@ -148,7 +159,7 @@ class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
     private fun setSelectViewVisiable(visible: Boolean) {
         if (visible) {
             selectBar.visibility = View.VISIBLE
-            selectBarInfo.text = String.format("Selected %d", selectImages.size)
+            selectBarInfo.text = String.format("Selected %d", adapter.selectedItems.size)
             fab.visibility = View.INVISIBLE
         } else {
             selectBar.visibility = View.INVISIBLE
@@ -175,16 +186,30 @@ class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
     }
 
     override fun showLoading() {
+        loading.visibility = View.VISIBLE
     }
 
     override fun showData(data: List<Uri>) {
+        loading.visibility = View.INVISIBLE
         adapter.swapData(data)
     }
 
-    inner class ImageAdapter(private var data: List<Uri>, private val imageHeight: Int) : RecyclerView.Adapter<ImageAdapter.ItemHolder>() {
+    inner class ImageAdapter(private var datas: List<Uri>) : RecyclerView.Adapter<ImageAdapter.ItemHolder>() {
+
+        var imageHeight: Int = 100
+
+        var selectState = false
+            set(value) {
+                if (!value) selectedItems.clear()
+                setSelectViewVisiable(value)
+                field = value
+                notifyDataSetChanged()
+            }
+
+        val selectedItems: MutableList<Uri> = arrayListOf()
 
         fun swapData(data: List<Uri>) {
-            this.data = data
+            this.datas = data
             notifyDataSetChanged()
         }
 
@@ -195,33 +220,43 @@ class MainFragment : Fragment(), MainContract.View, View.OnClickListener {
                 imageView.scaleType = ImageView.ScaleType.CENTER_CROP
                 imageView.minimumHeight = imageHeight
                 itemView.setOnClickListener {
+                    val data = datas[adapterPosition]
+                    if (selectState) {
+                        if (selectedItems.contains(data))
+                            selectedItems.remove(data)
+                        else selectedItems.add(data)
+                        if (selectedItems.isEmpty()) {
+                            selectState = false
+                        }
+                        selectBarInfo.text = String.format("Selected %d", selectedItems.size)
+                        notifyItemChanged(adapterPosition)
+                    } else
+                        actionShow(data)
                 }
                 itemView.setOnLongClickListener {
-                    true
+                    selectedItems.add(datas[adapterPosition])
+                    selectState = !selectState
+                    return@setOnLongClickListener true
                 }
 
             }
             return itemHolder
         }
 
-        override fun getItemCount(): Int = data.size
+        override fun getItemCount(): Int = datas.size
 
         override fun onBindViewHolder(holder: ItemHolder?, position: Int) {
             holder?.apply {
-                Glide.with(holder.itemView).load(data[adapterPosition]).into(imageView)
-                shadow.visibility = if (selectImages.contains(data[position])) View.VISIBLE else View.INVISIBLE
+                Glide.with(holder.itemView).load(datas[adapterPosition]).into(imageView)
+                shadow.visibility = if (selectState && selectedItems.contains(datas[position])) View.VISIBLE else View.INVISIBLE
             }
         }
 
         inner class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
             val imageView: ImageView = itemView.findViewById(R.id.item_image)
+
             val shadow: View = itemView.findViewById(R.id.item_shadow)
-            fun showOrHideShadow(visible: Boolean) {
-                shadow.visibility = if (visible) View.VISIBLE else View.INVISIBLE
-                val annotation = if (visible) AlphaAnimation(0f, 1f) else AlphaAnimation(1f, 0f)
-                annotation.duration = 200
-                shadow.startAnimation(annotation)
-            }
         }
 
     }

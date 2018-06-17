@@ -2,42 +2,40 @@ package org.kreal.lwp.main
 
 import android.content.Context
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
-import org.kreal.lwp.models.IWallpaerManager
+import org.kreal.lwp.models.IWallpaperManager
 
-class MainPresenter(private val view: MainContract.View, private val wallpaperManager: IWallpaerManager) : MainContract.Presenter, IWallpaerManager.Callback {
-    private val handler = Handler(Looper.getMainLooper())
+class MainPresenter(private val view: MainContract.View, private val wallpaperManager: IWallpaperManager) : MainContract.Presenter, IWallpaperManager.LoadWallpapersCallback {
 
     init {
         view.setPresenter(this)
-        wallpaperManager.setChangeListener(this)
     }
 
     override fun start() {
         view.showLoading()
-        view.showData(wallpaperManager.list())
+        loadData()
     }
 
     override fun loadData() {
-        postDataAsync(wallpaperManager.list())
+        wallpaperManager.list(this)
     }
 
     override fun addPaper(context: Context, uri: Uri) {
+        view.showLoading()
         wallpaperManager.add(context, uri)
+        loadData()
     }
 
     override fun deletePaper(vararg names: Uri) {
+        view.showLoading()
         wallpaperManager.delete(*names)
+        loadData()
     }
 
-    override fun changed(data: List<Uri>) {
-        postDataAsync(data)
+    override fun onWallpapersLoaded(data: List<Uri>) {
+        view.showData(data)
     }
 
-    private fun postDataAsync(data: List<Uri>) {
-        if (Thread.currentThread() == Looper.getMainLooper().thread)
-            view.showData(data)
-        else handler.post { view.showData(data) }
+    override fun onDataNotAvailable() {
+        view.showLoading()
     }
 }
